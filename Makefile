@@ -8,6 +8,8 @@
 VERSION = latest
 REPO = mikeln
 
+all: build-all
+
 build-all: build-dbsetup build-inject build-app
 
 build-inject: twissandra_inject_img

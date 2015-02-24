@@ -1,6 +1,10 @@
 
-.PHONY: default
-
+.PHONY: default clean-inject clean-dbsetup clean-app
+#
+# This makefile assumes that docker is installed
+#
+# 2/20/2015 mln
+#
 VERSION = latest
 REPO = mikeln
 
@@ -39,3 +43,15 @@ twissandra_app_img: Dockerfile.app
 	docker build -t $(REPO)/twissandra_app_img:$(VERSION) --rm=true --force-rm=true .
 	#@touch twissandra_app_img
 
+
+
+clean: clean-dbsetup clean-inject clean-app
+
+clean-inject: 
+	docker rmi  $(REPO)/twissandra_inj_img:$(VERSION)
+
+clean-dbsetup:
+	docker rmi $(REPO)/twissandra_db_img:$(VERSION)
+
+clean-app:
+	docker rmi $(REPO)/twissandra_app_img:$(VERSION)

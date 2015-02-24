@@ -3,6 +3,10 @@
 ### Purpose
 This builds 3 docker images from twissandra
 
+### Assumptions
+* `docker` installed
+* cassandra container/service is accessible via the name `cass`
+
 ### Images:
 * **mikeln/twissandra_db_img** - cassandra schema creation or DB data erase
 * **mikeln//twissandra_inj_img** - data injection tool
@@ -31,7 +35,10 @@ NOTE: The Makefile assumes that docker is installed.
 NOTE: The Dockerfile is created for each image from the appropriate Dockerfile.<blah> file.
 	
 ### Recommended Invocations
-This information is captured in run.sh:
+
+Example of cassandra running in a `docker` container as name `cass1`.
+
+This information is captured in `run.sh`:
 
 `docker run -it --rm --name twiss_init --link cass1:cass mikeln/twissandra_db_img`
 

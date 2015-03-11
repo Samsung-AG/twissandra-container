@@ -1,0 +1,32 @@
+id: datainject
+kind: ReplicationController
+apiVersion: v1beta1
+desiredState:
+  replicas: 1
+  replicaSelector:
+    name: datainject
+  podTemplate:
+    desiredState:
+      manifest:
+        version: v1beta1
+        id: datainject
+        containers:
+          - name: datainject
+            image: mikeln/datainject-kub:v1
+            cpu: 100
+            ports:
+              - name: cql
+                containerPort: 9042
+              - name: thrift
+                containerPort: 9160
+              - name: jmx
+                containerPort: 7199
+            env:
+#            #  - key: MAX_HEAP_SIZE
+#            #    value: 512M
+#            #  - key: HEAP_NEWSIZE
+#            #    value: 100M
+              - key: KUBERNETES_API_PROTOCOL
+                value: http
+    labels:
+      name: datainject

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Twissandra Container App Startup Script
-# 3/11/2015 mikeln
+# Twissandra schema command
+# 3/13/2015 mikeln
 #
 # This attempts to determine if we are starting in Kubernetes or not.
 # If so, read the needed Kubernetes env vars and store the information in /etc/hosts
@@ -28,15 +28,15 @@ if [ -n "$INKUB" ]; then
         echo "$CASSIP $CASSHOSTNAME" >> /etc/hosts
     else
         echo "WARNING no cassandra kubernetes service info was found.  Is it running?"
-        exit 1
+        exit 1 
     fi
 else
     echo "Running inside Docker only...nothing to do"
 fi
 # Start the app
 # NOTE: need to supply the args for this...
-echo Starting Twissandra...
+echo Starting Twissandra Schema...
 #
 # pass the input args to the python thing...
 #
-python /twissandra/manage.py $*
+python /twissandra/manage.py sync_cassandra

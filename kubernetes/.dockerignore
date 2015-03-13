@@ -1,0 +1,6 @@
+.git
+.gitmodules
+.gitignore
+Makefile
+Dockerfile.*
+twissandra_img

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Twissandra Container App Startup Script
-# 3/11/2015 mikeln
+# Twissandra inject data command
+# 3/13/2015 mikeln
 #
 # This attempts to determine if we are starting in Kubernetes or not.
 # If so, read the needed Kubernetes env vars and store the information in /etc/hosts
@@ -35,8 +35,8 @@ else
 fi
 # Start the app
 # NOTE: need to supply the args for this...
-echo Starting Twissandra...
+echo Starting Twissandra inject...
 #
 # pass the input args to the python thing...
 #
-python /twissandra/manage.py $*
+python /twissandra/manage.py inject_data 10 10 0 0

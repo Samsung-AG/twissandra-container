@@ -7,26 +7,23 @@ desiredState:
     id: datainject
     containers:
       - name: datainject
-        image: mikeln/datainject-kub:v1
+        image: mikeln/twissandra_img:v1
+        command:
+          - twiss-schema
+          - twiss-inject
+        cpu: 100
         ports:
           - name: cql
             containerPort: 9042
           - name: thrift
             containerPort: 9160
-          - name: jmx
-            containerPort: 7199
-        env:
-#          - key: MAX_HEAP_SIZE
-#            value: 512M
-#          - key: HEAP_NEWSIZE
-#            value: 100M
-          - key: KUBERNETES_API_PROTOCOL
-            value: http
     volumes:
       - name: data
         source:
           emptyDir: {}
+    restartPolicy: 
+      never: 
+        RestartPolicyNever: 
 labels:
   name: datainject
-
     

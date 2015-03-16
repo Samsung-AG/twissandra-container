@@ -39,4 +39,7 @@ echo Starting Twissandra...
 #
 # pass the input args to the python thing...
 #
-python /twissandra/manage.py $*
+python /twissandra/manage.py 
+#
+# lockup the container..
+tail -f /var/log/lastlog

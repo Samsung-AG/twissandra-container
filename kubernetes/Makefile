@@ -5,7 +5,7 @@
 #
 # 2/20/2015 mln
 #
-VERSION = v1
+VERSION = v2
 REPO = mikeln
 
 all: build-all
@@ -14,7 +14,7 @@ build-all: build-app
 
 build-app: twissandra_img
 
-twissandra_img: Dockerfile.app init.sh
+twissandra_img: Dockerfile.app init.sh schema.sh inject.sh
 	@echo "building app $(VERSION)"
 	#
 	# workaround until docker 1.5.0 -f

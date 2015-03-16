@@ -33,6 +33,8 @@ if [ -n "$INKUB" ]; then
 else
     echo "Running inside Docker only...nothing to do"
 fi
+
+cat /etc/hosts
 # Start the app
 # NOTE: need to supply the args for this...
 echo Starting Twissandra Schema...
@@ -40,3 +42,5 @@ echo Starting Twissandra Schema...
 # pass the input args to the python thing...
 #
 python /twissandra/manage.py sync_cassandra
+# lockup the container..
+tail -f /var/log/lastlog

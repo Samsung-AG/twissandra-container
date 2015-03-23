@@ -5,7 +5,31 @@
 #
 # 2/20/2015 mln
 #
-VERSION = latest
+VERSION := latest
+#
+# do some repo evals... want everyone to use their own, unless building for the team
+#
+DEFAULT_REPO := "samsungAG"
+DOCKER_REPO ?= $(DEFAULT_REPO)
+REPO := $(DOCKER_REPO)
+#
+#
+repo-warning:
+	@if  [ $(DOCKER_REPO) =  $(DEFAULT_REPO) ]; then \
+        echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"; \
+        echo "  You have not changed DOCKER_REPO from: $(DOCKER_REPO)"; \
+        echo "  You MUST set DOCKER_REPO in your environment"; \
+        echo "  or directly in this Makefile unless you are"; \
+        echo "  building for the group"; \
+        echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"; \
+        false; \
+    else \
+        echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"; \
+        echo "  Your DOCKER_REPO is set to: $(DOCKER_REPO)"; \
+        echo "  Please execute 'make all' to build"; \
+        echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"; \
+    fi
+
 REPO = mikeln
 
 all: build-all
@@ -21,7 +45,7 @@ twissandra_inj_img: Dockerfile.inject twissandra
 	cp Dockerfile.inject Dockerfile
 	#docker build -f Dockerfile.inject -t $(REPO)/twissandra_inj_img:$(VERSION) .
 	docker build -t $(REPO)/twissandra_inj_img:$(VERSION) --rm=true --force-rm=true .
-	@touch twissandra_inj_img
+	@touch $@
 	@docker images $(REPO)/twissandra_inj_img
 
 build-dbsetup: twissandra_db_img
@@ -33,7 +57,7 @@ twissandra_db_img: Dockerfile.dbsetup
 	cp Dockerfile.dbsetup Dockerfile
 	#docker build -f Dockerfile.inject -t $(REPO)/twissandra_db_img:$(VERSION) .
 	docker build -t $(REPO)/twissandra_db_img:$(VERSION) --rm=true --force-rm=true .
-	@touch twissandra_db_img
+	@touch $@
 	@docker images $(REPO)/twissandra_db_img
 
 build-app: twissandra_app_img
@@ -45,7 +69,7 @@ twissandra_app_img: Dockerfile.app
 	cp Dockerfile.app Dockerfile
 	#docker build -f Dockerfile.inject -t $(REPO)/twissandra_app_img:$(VERSION) .
 	docker build -t $(REPO)/twissandra_app_img:$(VERSION) --rm=true --force-rm=true .
-	@touch twissandra_app_img
+	@touch $@
 	@docker images $(REPO)/twissandra_app_img
 
 build-shell: twissandra_shell_img
@@ -57,7 +81,7 @@ twissandra_shell_img: Dockerfile.app
 	cp Dockerfile.shell Dockerfile
 	#docker build -f Dockerfile.shell -t $(REPO)/twissandra_shell_img:$(VERSION) .
 	docker build -t $(REPO)/twissandra_shell_img:$(VERSION) --rm=true --force-rm=true .
-	@touch twissandra_shell_img
+	@touch $@
 	@docker images $(REPO)/twissandra_shell_img
 
 

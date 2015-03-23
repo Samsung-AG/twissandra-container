@@ -9,6 +9,8 @@
 #
 # any app just needs to locate the cassandra kubernetes service entrypoint
 #
+# Use this as a common script 
+#
 INKUB=`env | grep ^KUBERNETES`
 if [ -n "$INKUB" ]; then
     # in kubernetes
@@ -22,24 +24,29 @@ if [ -n "$INKUB" ]; then
     #
     CASSIP=`env | grep CASSANDRA_SERVICE_HOST | cut -d "=" -f 2`
     if [ -n "$CASSIP" ]; then
+        echo "Found Cassandra Service at IP: $CASSIP"
         #
         # simulate DOCKER by adding to /etc/hosts file
         #
         echo "$CASSIP $CASSHOSTNAME" >> /etc/hosts
+        #
+        # modify the python file directly (the /etc/hosts hack does not appear to work consistently)
+        #  
+#        sed -i -e "s/'cass'/'$CASSIP'/" /twissandra/cass.py
+        #
+        # inconsistent in code...hence the second location
+#        sed -i -e "s/'cass'/'$CASSIP'/" /twissandra/tweets/management/commands/sync_cassandra.py
+        #
+        # here is the real config
+#        sed -i -e "s/'cass'/'$CASSIP'/" /twissandra/settings.py
+        echo "hosts change ------------------"
+        cat /etc/hosts
+        echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
     else
         echo "WARNING no cassandra kubernetes service info was found.  Is it running?"
-        exit 1
+#        exit 1
     fi
 else
     echo "Running inside Docker only...nothing to do"
 fi
-# Start the app
-# NOTE: need to supply the args for this...
-echo Starting Twissandra...
-#
-# pass the input args to the python thing...
-#
-python /twissandra/manage.py 
-#
-# lockup the container..
-tail -f /var/log/lastlog
+

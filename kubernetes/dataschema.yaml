@@ -1,15 +1,15 @@
-id: datainject
+id: dataschema
 kind: Pod
 apiVersion: v1beta1
 desiredState:
   manifest:
     version: v1beta1
-    id: datainject
+    id: dataschema
     containers:
-      - name: datainject
+      - name: dataschema
         image: mikeln/twissandra_img:v4
         command:
-          - twiss-inject
+          - twiss-schema
         cpu: 100
         ports:
           - name: cql
@@ -24,5 +24,5 @@ desiredState:
       never: 
         RestartPolicyNever: 
 labels:
-  name: datainject
+  name: dataschema
     

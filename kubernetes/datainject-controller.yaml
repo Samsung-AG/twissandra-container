@@ -12,7 +12,7 @@ desiredState:
         id: datainject
         containers:
           - name: datainject
-            image: mikeln/datainject-kub:v1
+            image: mikeln/datainject-kub:v3
             cpu: 100
             ports:
               - name: cql

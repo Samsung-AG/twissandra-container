@@ -1,6 +1,3 @@
-[submodule "docker/twissandra"]
-	path = docker/twissandra
-	url = git@github.com:mikeln/twissandra.git
 [submodule "kubernetes/twissandra"]
 	path = kubernetes/twissandra
 	url = git@github.com:mikeln/twissandra.git

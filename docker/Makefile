@@ -5,7 +5,7 @@
 #
 # 2/20/2015 mln
 #
-VERSION := latest
+VERSION := a0
 #
 # do some repo evals... want everyone to use their own, unless building for the team
 #
@@ -72,6 +72,18 @@ twissandra_app_img: Dockerfile.app
 	@touch $@
 	@docker images $(REPO)/twissandra_app_img
 
+build-dev: twissandra_dev_img
+
+twissandra_dev_img: Dockerfile.dev ssh build.sh
+	@echo "building dev $(VERSION)"
+	#
+	# workaround until docker 1.5.0 -f
+	cp Dockerfile.dev Dockerfile
+	#docker build -f Dockerfile.dev -t $(REPO)/twissandra_dev_img:$(VERSION) .
+	docker build -t $(REPO)/twissandra_dev_img:$(VERSION) --rm=true --force-rm=true .
+	@touch $@
+	@docker images $(REPO)/twissandra_dev_img
+
 build-shell: twissandra_shell_img
 
 twissandra_shell_img: Dockerfile.app
@@ -100,6 +112,10 @@ clean-dbsetup:
 clean-app:
 	-docker rmi $(REPO)/twissandra_app_img:$(VERSION)
 	-rm -f twissandra_app_img
+
+clean-dev:
+	-docker rmi $(REPO)/twissandra_dev_img:$(VERSION)
+	-rm -f twissandra_dev_img
 
 clean-shell:
 	-docker rmi $(REPO)/twissandra_shell_img:$(VERSION)

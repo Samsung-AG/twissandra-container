@@ -12,6 +12,10 @@ ssh -v -T -F /root/.ssh/config git@github.com
 #
 git clone git@github.com:mikeln/twissandra.git /twissandra
 
+#
+# hardcode the cass for now
+echo "10.247.87.50 cass" >> /etc/hosts
+
 # Get pip to download and install requirements:
 pip install -r /twissandra/requirements.txt
 

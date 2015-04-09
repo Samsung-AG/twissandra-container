@@ -11,7 +11,11 @@
 #
 # Use this as a common script 
 #
-INKUB=`env | grep ^KUBERNETES`
+# Use KUBERNETES_RO vs just KUBERNETES as we may have set some needed stuff in our env
+# whether or not we are acutally running kubernetes.  KUBERNETES_RO_* should only be 
+# set by Kubernetes
+#
+INKUB=`env | grep ^KUBERNETES_RO`
 if [ -n "$INKUB" ]; then
     # in kubernetes
     echo "Running inside Kubernetes"

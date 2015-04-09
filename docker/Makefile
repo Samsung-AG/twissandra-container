@@ -5,7 +5,7 @@
 #
 # 2/20/2015 mln
 #
-VERSION := a0
+VERSION := b0
 #
 # do some repo evals... want everyone to use their own, unless building for the team
 #
@@ -38,7 +38,7 @@ build-all: build-dbsetup build-inject build-app
 
 build-inject: twissandra_inj_img
 
-twissandra_inj_img: Dockerfile.inject twissandra
+twissandra_inj_img: Dockerfile.inject 
 	@echo "building inject $(VERSION)"
 	#
 	# workaround until docker 1.5.0 -f

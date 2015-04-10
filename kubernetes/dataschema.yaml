@@ -7,7 +7,7 @@ desiredState:
     id: dataschema
     containers:
       - name: dataschema
-        image: mikeln/twissandra_img:v5
+        image: mikeln/twissandra_img:v7
         command:
           - twiss-schema
         cpu: 100

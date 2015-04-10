@@ -3,6 +3,6 @@ kind: Service
 apiVersion: v1beta1
 port: 8222
 containerPort: 8222
-publicIPs: [ 10.245.1.3 ]
+publicIPs: [ 172.16.1.103, 172.16.1.104 ]
 selector:
   name: twissandra

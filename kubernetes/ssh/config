@@ -1,0 +1,7 @@
+#Default GitHub
+Host github.com
+HostName github.com
+User git
+StrictHostKeyChecking no
+IdentityFile /root/.ssh/docker_rsa
+

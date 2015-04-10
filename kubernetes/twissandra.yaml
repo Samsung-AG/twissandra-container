@@ -7,13 +7,13 @@ desiredState:
     id: twissandra
     containers:
       - name: twissandra
-        image: mikeln/twissandra_img:v6
+        image: mikeln/twissandra_img:v7
         command:
 #          - twiss-web
         cpu: 100
         ports:
           - name: web
-            containerPort: 8000
+            containerPort: 8222
           - name: cql
             containerPort: 9042
           - name: thrift

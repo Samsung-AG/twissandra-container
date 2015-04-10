@@ -3,17 +3,11 @@
 # Based on Ubuntu
 ############################################################
 
-# Use phusion/baseimage as base image. To make your builds reproducible, make
-# sure you lock down to a specific version, not to `latest`!
-# See https://github.com/phusion/baseimage-docker/blob/master/Changelog.md for
-# a list of version numbers.
-FROM phusion/baseimage:0.9.16
+# Set the base image to Ubuntu
+FROM ubuntu
 
 # File Author / Maintainer
 MAINTAINER Mikel Nelson <mikel.n@samsung.com>
-
-# Use baseimage-docker's init system.
-CMD ["/sbin/my_init"]
 
 # Add the application resources URL
 RUN echo "deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -sc) main universe" >> /etc/apt/sources.list
@@ -29,6 +23,18 @@ RUN apt-get install -y libev4 libev-dev
 
 # Install Python and Basic Python Tools
 RUN apt-get install -y python python-dev python-distribute python-pip
+
+# use github for our development /twissandra instead of baking in
+#
+# add ssh key for github
+#
+# ssh/ is prepopulated the docker_rsa.pub key must be in github account first!
+#
+ADD /ssh /root/.ssh
+RUN chmod 700 /root/.ssh
+RUN chmod 600 /root/.ssh/*
+# get key of destination ...
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 #
 # add container startup script
 #
@@ -44,22 +50,8 @@ RUN chmod 755 /usr/local/bin/twiss-inject
 ADD web.sh /usr/local/bin/twiss-web
 RUN chmod 755 /usr/local/bin/twiss-web
 
-# Copy the application folder inside the container
-ADD /twissandra /twissandra
-
-# Get pip to download and install requirements:
-RUN pip install -r /twissandra/requirements.txt
-
 # Expose ports
-EXPOSE 8000
-
-RUN mkdir /etc/service/twissandra
-ADD web.sh /etc/service/twissandra/run
-RUN chmod 755 /etc/service/twissandra/run
-# add logging dir...
-#RUN mkdir /etc/service/twissandra/log
-#RUN chmod 755 /etc/service/twissandra/log
-
-# Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+EXPOSE 8222
+#
+USER root
+CMD [ "twiss-web" ]

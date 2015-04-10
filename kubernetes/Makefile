@@ -5,7 +5,7 @@
 #
 # 2/20/2015 mln
 #
-VERSION := v4
+VERSION := v7
 #
 # do some repo evals... want everyone to use their own, unless building for the team
 #
@@ -38,7 +38,7 @@ build-all: build-app
 
 build-app: $(DOCKER_IMAGE)
 
-$(DOCKER_IMAGE): Dockerfile.app init.sh schema.sh inject.sh
+$(DOCKER_IMAGE): Dockerfile.app init.sh schema.sh inject.sh 
 	@echo "building app $(VERSION)"
 	#
 	# workaround until docker 1.5.0 -f

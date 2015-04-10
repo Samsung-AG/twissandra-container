@@ -23,18 +23,6 @@ RUN apt-get install -y libev4 libev-dev
 
 # Install Python and Basic Python Tools
 RUN apt-get install -y python python-dev python-distribute python-pip
-
-# use github for our development /twissandra instead of baking in
-#
-# add ssh key for github
-#
-# ssh/ is prepopulated the docker_rsa.pub key must be in github account first!
-#
-ADD /ssh /root/.ssh
-RUN chmod 700 /root/.ssh
-RUN chmod 600 /root/.ssh/*
-# get key of destination ...
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 #
 # add container startup script
 #
@@ -50,8 +38,26 @@ RUN chmod 755 /usr/local/bin/twiss-inject
 ADD web.sh /usr/local/bin/twiss-web
 RUN chmod 755 /usr/local/bin/twiss-web
 
+# Copy the application folder inside the container
+ADD /twissandra /twissandra
+
+# Get pip to download and install requirements:
+RUN pip install -r /twissandra/requirements.txt
+
 # Expose ports
-EXPOSE 8222
+EXPOSE 8000
+
+#
+# MOVE RUNNING TO init.sh script
+#
+# Set the default directory where CMD will execute
+#WORKDIR /twissandra
+# Set the default command to execute    
+# when creating a new container
+#
+#ENTRYPOINT [ "python", "manage.py" ]
+#
+# CMD [ ""]
 #
 USER root
-CMD [ "twiss-web" ]
+CMD [ "twiss-start" ]

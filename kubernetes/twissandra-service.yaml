@@ -1,8 +1,8 @@
 id: twissandra
 kind: Service
 apiVersion: v1beta1
-port: 9160
-containerPort: 9160
-publicIPs: [ 10.10.10.1 ]
+port: 8222
+containerPort: 8222
+publicIPs: [ 172.16.1.103, 172.16.1.104 ]
 selector:
   name: twissandra

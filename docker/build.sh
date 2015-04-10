@@ -13,9 +13,36 @@ ssh -v -T -F /root/.ssh/config git@github.com
 git clone git@github.com:mikeln/twissandra.git /twissandra
 
 #
-# Use the common start script to simulate the Docker /etc/hosts hack
-#
-. twiss-start
+# hardcode the cass for now
+#echo "10.247.81.229 cass" >> /etc/hosts
+INKUB=`env | grep ^KUBERNETES_RO`
+if [ -n "$INKUB" ]; then
+    # in kubernetes
+    echo "Running inside Kubernetes"
+    #
+    # note: this is the expect hostname in the app: cass
+    #
+    CASSHOSTNAME="cass"
+    #
+    # find the cassandra service: we only need the host IP... ports are a given 9042, 9160
+    #
+    CASSIP=`env | grep CASSANDRA_SERVICE_HOST | cut -d "=" -f 2`
+    if [ -n "$CASSIP" ]; then
+        echo "Found Cassandra Service at IP: $CASSIP"
+        #
+        # simulate DOCKER by adding to /etc/hosts file
+        #
+        echo "$CASSIP $CASSHOSTNAME" >> /etc/hosts
+        echo "hosts change ------------------"
+        cat /etc/hosts
+        echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    else
+        echo "WARNING no cassandra kubernetes service info was found.  Is it running?"
+#        exit 1
+    fi
+else
+    echo "Running inside Docker only...nothing to do"
+fi
 
 # Get pip to download and install requirements:
 pip install -r /twissandra/requirements.txt
@@ -23,12 +50,7 @@ pip install -r /twissandra/requirements.txt
 cd /twissandra
 
 if [ $# -lt 1 ]; then
-   #python manage.py 
-   #
-   # change the default to 10 10 inject
-   #
-   echo "running inject_data"
-   python manage.py inject_data 10 10 0 0
+   python manage.py 
 else
     if [ "$1" = "db" ]; then
         echo "do db thing"

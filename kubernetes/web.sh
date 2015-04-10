@@ -25,10 +25,10 @@ cd /twissandra
 if [ $# -lt 1 ]; then
    #python manage.py 
    #
-   # change the default to 10 10 inject
+   # change the default run to server
    #
-   echo "running inject_data"
-   python manage.py inject_data 10 10 0 0
+   echo "running django server on 8222"
+   python manage.py runserver 0.0.0.0:8222
 else
     if [ "$1" = "db" ]; then
         echo "do db thing"

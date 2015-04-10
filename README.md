@@ -3,6 +3,4 @@
 ### Purpose
 This builds containers (docker and kubernetes) 
 
-### Assumptions
-
-
+See subdirectory README.md for specific instructions.

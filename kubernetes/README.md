@@ -1,4 +1,4 @@
-# **tissandra-kubernetes**
+# **twissandra-kubernetes**
 ##  build and tools
 ### Purpose
 This captures the configurations etc need to run twissandra under kubernetes

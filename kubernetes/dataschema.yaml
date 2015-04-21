@@ -8,8 +8,7 @@ desiredState:
     containers:
       - name: dataschema
         image: mikeln/twissandra_img:v7
-        command:
-          - twiss-schema
+        command: [ 'twiss-schema','db' ]
         cpu: 100
         ports:
           - name: cql

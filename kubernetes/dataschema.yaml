@@ -7,7 +7,7 @@ desiredState:
     id: dataschema
     containers:
       - name: dataschema
-        image: mikeln/twissandra_img:v7
+        image: mikeln/twissandra_img:v8
         command: [ 'twiss-schema','db' ]
         cpu: 100
         ports:

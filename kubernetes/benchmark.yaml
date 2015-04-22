@@ -1,26 +1,27 @@
-id: twissandra
+id: benchmark
 kind: Pod
 apiVersion: v1beta1
 desiredState:
   manifest:
     version: v1beta1
-    id: twissandra
+    id: benchmark
     containers:
-      - name: twissandra
+      - name: benchmark
         image: mikeln/twissandra_img:v8
-        command:
-#          - twiss-web
+        command: [ 'twiss-bench' ]
         cpu: 100
         ports:
-          - name: web
-            containerPort: 8222
           - name: cql
             containerPort: 9042
           - name: thrift
             containerPort: 9160
+    volumes:
+      - name: data
+        source:
+          emptyDir: {}
     restartPolicy: 
       never: 
         RestartPolicyNever: 
 labels:
-  name: twissandra
+  name: benchmark
     

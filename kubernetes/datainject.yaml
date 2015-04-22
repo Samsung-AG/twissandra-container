@@ -7,7 +7,7 @@ desiredState:
     id: datainject
     containers:
       - name: datainject
-        image: mikeln/twissandra_img:v5
+        image: mikeln/twissandra_img:v8
         command:
           - twiss-inject
         cpu: 100

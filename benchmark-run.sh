@@ -141,7 +141,7 @@ fi
 NUMTRIES=120
 LASTRET=1
 LASTSTATUS="unknown"
-while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ]; do
+while [ $NUMTRIES -ne 0 ] && ( [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ] ); do
     let REMTIME=NUMTRIES*5
     LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.currentState.status}} 2>/dev/null`
     LASTRET=$?
@@ -158,7 +158,13 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ]; do
         sleep 5
     else
         #echo "Twissandra pod found $LASTSTATUS"
-        if [ "$LASTSTATUS" != "Succeeded" ]; then
+        if [ "$LASTSTATUS" = "Failed" ]; then
+            echo ""
+            echo "Twissandra datachema pod: Failed!"
+        elif [ "$LASTSTATUS" = "Succeeded" ]; then
+            echo ""
+            echo "Twissandra datachema pod finished!"
+        else
             echo -n "Twissandra datachema pod: $LASTSTATUS - NOT Succeeded $REMTIME secs remaining"
             let D=NUMTRIES/2
             while [ $D -ne 0 ]; do
@@ -168,14 +174,11 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ]; do
             echo -n "  $CR"
             let NUMTRIES=NUMTRIES-1
             sleep 5
-        else
-            echo ""
-            echo "Twissandra datachema pod finished!"
         fi
     fi
 done
 echo ""
-if [ $NUMTRIES -le 0 ]; then
+if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
     echo "Twissandra dataschema pod did not finish in alotted time...exiting"
     # clean up the potential mess
     . ./benchmark-down.sh
@@ -224,7 +227,7 @@ fi
 NUMTRIES=120
 LASTRET=1
 LASTSTATUS="unknown"
-while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ]; do
+while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ]; do
     let REMTIME=NUMTRIES*5
     LASTSTATUS=`$kubectl_local get pods benchmark --output=template --template={{.currentState.status}} 2>/dev/null`
     LASTRET=$?
@@ -241,7 +244,13 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ]; do
         sleep 5
     else
         #echo "Twissandra pod found $LASTSTATUS"
-        if [ "$LASTSTATUS" != "Succeeded" ]; then
+        if [ "$LASTSTATUS" = "Failed" ]; then
+            echo ""
+            echo "Twissandra benchmark pod failed!"
+        elif [ "$LASTSTATUS" = "Succeeded" ]; then
+            echo ""
+            echo "Twissandra benchmark pod finished!"
+        else
             echo -n "Twissandra benchmark pod: $LASTSTATUS - NOT Succeeded $REMTIME secs remaining"
             let D=NUMTRIES/2
             while [ $D -ne 0 ]; do
@@ -251,14 +260,11 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ]; do
             echo -n "  $CR"
             let NUMTRIES=NUMTRIES-1
             sleep 5
-        else
-            echo ""
-            echo "Twissandra benchmark pod finished!"
         fi
     fi
 done
 echo ""
-if [ $NUMTRIES -le 0 ]; then
+if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
     echo "Twissandra benchmark pod did not finish in alotted time...exiting"
     # clean up the potential mess
     . ./benchmark-down.sh

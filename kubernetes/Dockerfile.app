@@ -50,6 +50,9 @@ RUN chmod 755 /usr/local/bin/twiss-inject
 ADD web.sh /usr/local/bin/twiss-web
 RUN chmod 755 /usr/local/bin/twiss-web
 
+ADD benchmark.sh /usr/local/bin/twiss-bench
+RUN chmod 755 /usr/local/bin/twiss-bench
+
 # Expose ports
 EXPOSE 8222
 #

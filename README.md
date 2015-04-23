@@ -5,6 +5,51 @@ This builds containers (docker and kubernetes)
 
 See subdirectory README.md for specific instructions.
 
+## Benchmark
+The benchmark creates the Twissandra schema in a connected Cassandra DB cluster, then starts the Twissandra Django server.  Fixed data is then injected into the cassandra cluster.
+
+The twissandra benchmark command takes 2 arguments: number of new users and number of tweets for each user.  Each user name is a fixed size of 10 random characters.  Each tweet is a fixed size of 80 random characters.  The result is #user * #tweets new data records.  There is also another join type table that is updated.
+
+### Scripts
+Several bash scripts have been created to automate the creation and timing of the benchmark.  They automate the sequence documented below.  Note that these scripts assume you are running on a Kraken CoreOS cluster using those IPs and names, and that you have a running Cassandra cluster.
+
+There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ````benchmark-04-run.sh```` and ````benchmark-04-down.sh````
+
+#### ````benchmark-run.sh```` 
+* Locates the Kubectl needed for Kraken
+* Locates the .kubeconfig in the kraken/kubernetes directory
+* Uses the information to construct the correct ````kubectl```` command.  e.g.:
+
+      kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+
+* Checks that the Cassandra service is running
+* Runs the Twissandra dataschema creation Pod
+* Waits until the dataschema Succeeds (up to 10 minutes)
+* Checks for any previous benchmark pods and deletes them if present.
+* Starts the benchmark pod
+* Starts a timer when the pod goes to "Running"
+* Monitors for "Succeeded" or "Failed" and calculates the elapsed time in seconds.
+* Control-C at any point will terminate and tear down the entire setup (via ````benchmark-down.sh````)
+* Any error will terminate and tear down the entire setup (via ````benchmark-down.sh````)
+
+#### ````benchmark-down.sh````
+* Locates the Kubectl needed for Kraken
+* Locates the .kubeconfig in the kraken/kubernetes directory
+* Uses the information to construct the correct ````kubectl```` command.  e.g.:
+
+      kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+
+* Removes the Datachema (if present) and Benchmark Pods
+
+
+#### ````benchmark-04-run.sh```` 
+* The same as ````benchmark-run.sh```` but runs 4 pods named benchmark-01 to benchmark-04
+* Times from when the first pod status is "Running" until all 4 are "Succeeded".
+* Any "Failed" will abort the whole thing
+
+#### ````benchmark-04-down.sh````
+* The same as ````benchmark-down.sh```` except removes all 4 pods via label selector.
+
 ## Demo
 The demo creates the Twissandra schema in a connected Cassandra DB cluster, then starts the Twissandra Django web server.  Random data injection can be commanded from the web UI.
 

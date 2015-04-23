@@ -227,6 +227,9 @@ fi
 NUMTRIES=120
 LASTRET=1
 LASTSTATUS="unknown"
+STARTTIME=0
+CURTIME=0
+ENDTIME=0
 while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ]; do
     let REMTIME=NUMTRIES*5
     LASTSTATUS=`$kubectl_local get pods benchmark --output=template --template={{.currentState.status}} 2>/dev/null`
@@ -250,6 +253,16 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS"
         elif [ "$LASTSTATUS" = "Succeeded" ]; then
             echo ""
             echo "Twissandra benchmark pod finished!"
+        elif [ "$LASTSTATUS" = "Running" ]; then
+            #
+            # calculate time
+            if [ $STARTTIME -eq 0 ]; then
+                STARTTIME=$(date +%s)
+                echo ""
+            fi
+            CURTIME=$(date +%s)
+            echo -n "Twissandra Benchmard Inject Running: $(($CURTIME-$STARTTIME)) +/-10 seconds $CR"
+            sleep 5
         else
             echo -n "Twissandra benchmark pod: $LASTSTATUS - NOT Succeeded $REMTIME secs remaining"
             let D=NUMTRIES/2
@@ -263,9 +276,10 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS"
         fi
     fi
 done
+ENDTIME=$(date +%s)
 echo ""
 if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
-    echo "Twissandra benchmark pod did not finish in alotted time...exiting"
+    echo "Twissandra benchmark pod did not start in alotted time...exiting"
     # clean up the potential mess
     . ./benchmark-down.sh
     exit 3
@@ -288,6 +302,7 @@ echo " "
 echo "===================================================================="
 echo " "
 echo "  Twissandra Benchmark has finished!"
+echo "     elapsed run time: $(($ENDTIME - $STARTTIME)) +/-10 seconds "
 echo " "
 echo "===================================================================="
 echo "+++++ twissandra started in Kubernetes ++++++++++++++++++++++++++++"

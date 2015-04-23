@@ -1,0 +1,29 @@
+id: benchmark
+kind: ReplicationController
+apiVersion: v1beta1
+desiredState:
+  replicas: 2
+  replicaSelector:
+    name: benchmark
+  podTemplate:
+    desiredState:
+      manifest:
+        apiVersion: v1beta1
+        id: benchmark
+        containers:
+          - name: benchmark
+            image: mikeln/twissandra_img:v8
+            command: [ 'twiss-bench' ]
+            cpu: 100
+            ports:
+              - name: cql
+                containerPort: 9042
+              - name: thrift
+                containerPort: 9160
+        volumes:
+          - name: data
+            source:
+              emptyDir: {}
+    labels:
+      name: benchmark
+            

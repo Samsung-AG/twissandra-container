@@ -83,7 +83,7 @@ fi
 echo " "
 # get minion IPs for later...also checks if cluster is up
 echo "+++++ finding Kubernetes Nodes services ++++++++++++++++++++++++++++"
-NODEIPS=`$kubectl_local get minions --output=template --template="{{range $.items}}{{.hostIP}}${CRLF}{{end}}" 2>/dev/null`
+NODEIPS=`$kubectl_local get minions --output=template --template="{{range $.items}}{{.metadata.name}}${CRLF}{{end}}" 2>/dev/null`
 if [ $? -ne 0 ]; then
     echo "kubectl is not responding. Is your Kraken Kubernetes Cluster Up and Running? (Hint: vagrant status, vagrant up)"
     exit 1;
@@ -145,7 +145,7 @@ LASTRET=1
 LASTSTATUS="unknown"
 while [ $NUMTRIES -ne 0 ] && ( [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ] ); do
     let REMTIME=NUMTRIES*5
-    LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.currentState.status}} 2>/dev/null`
+    LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.status.phase}} 2>/dev/null`
     LASTRET=$?
     if [ $? -ne 0 ]; then
         echo -n "Twissandra dataschema pod not found $REMTIME"
@@ -262,7 +262,7 @@ CURTIME=0
 ENDTIME=0
 while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ]; do
     let REMTIME=NUMTRIES*5
-    STATUSLIST=`$kubectl_local get pods --selector=name=benchmark --output=template --template="{{range $.items}}{{.currentState.status}}${CRLF}{{end}}" 2>/dev/null`
+    STATUSLIST=`$kubectl_local get pods --selector=name=benchmark --output=template --template="{{range $.items}}{{.status.phase}}${CRLF}{{end}}" 2>/dev/null`
     #
     # set the last status:
     #       if 1 is Running then Running

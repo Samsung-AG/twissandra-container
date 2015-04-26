@@ -1,15 +1,16 @@
-id: dataschema
+apiVersion: v1beta3
 kind: Pod
-apiVersion: v1beta1
-desiredState:
-  manifest:
-    version: v1beta1
-    id: dataschema
+metadata:
+    labels:
+        name: dataschema
+    name: dataschema
+spec:
     containers:
       - name: dataschema
         image: mikeln/twissandra_img:v8
-        command: [ 'twiss-schema','db' ]
-        cpu: 100
+        args: [ 'twiss-schema','db' ]
+        limits:
+            cpu: 1
         ports:
           - name: cql
             containerPort: 9042
@@ -17,11 +18,6 @@ desiredState:
             containerPort: 9160
     volumes:
       - name: data
-        source:
-          emptyDir: {}
-    restartPolicy: 
-      never: 
-        RestartPolicyNever: 
-labels:
-  name: dataschema
+        emptyDir: {}
+    restartPolicy: Never
     

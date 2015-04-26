@@ -81,7 +81,7 @@ fi
 echo " "
 # get minion IPs for later...also checks if cluster is up
 echo "+++++ finding Kubernetes Nodes services ++++++++++++++++++++++++++++"
-NODEIPS=`$kubectl_local get minions --output=template --template="{{range $.items}}{{.hostIP}}${CRLF}{{end}}" 2>/dev/null`
+NODEIPS=`$kubectl_local get minions --output=template --template="{{range $.items}}{{.metadata.name}}${CRLF}{{end}}" 2>/dev/null`
 if [ $? -ne 0 ]; then
     echo "kubectl is not responding. Is your Kraken Kubernetes Cluster Up and Running? (Hint: vagrant status, vagrant up)"
     exit 1;
@@ -184,7 +184,7 @@ LASTRET=1
 LASTSTATUS="unknown"
 while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ]; do
     let REMTIME=NUMTRIES*5
-    LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.currentState.status}} 2>/dev/null`
+    LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.status.phase}} 2>/dev/null`
     LASTRET=$?
     if [ $? -ne 0 ]; then
         echo -n "Twissandra dataschema pod not found $REMTIME"
@@ -268,7 +268,7 @@ LASTRET=1
 LASTSTATUS="unknown"
 while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Running" ]; do
     let REMTIME=NUMTRIES*5
-    LASTSTATUS=`$kubectl_local get pods twissandra --output=template --template={{.currentState.status}} 2>/dev/null`
+    LASTSTATUS=`$kubectl_local get pods twissandra --output=template --template={{.status.phase}} 2>/dev/null`
     LASTRET=$?
     if [ $? -ne 0 ]; then
         echo -n "Twissandra pod not found $REMTIME"
@@ -315,9 +315,9 @@ echo " "
 #
 # NO ERROR CHECKING HERE...this is ALL just Informational for the user
 #
-SERVICEIP=`$kubectl_local get services twissandra --output=template --template="{{.portalIP}}:{{.port}}" 2>/dev/null`
-PUBLICPORT=`$kubectl_local get services twissandra --output=template --template="{{.port}}" 2>/dev/null`
-PUBLICIP=`$kubectl_local get services twissandra --output=template --template="{{.publicIPs}}" 2>/dev/null`
+SERVICEIP=`$kubectl_local get services twissandra --output=template --template="{{.portalIP}}" 2>/dev/null`
+PUBLICPORT=`$kubectl_local get services twissandra --output=template --template="{{range $.spec.ports}}{{.port}}${CRLF}{{end}}" 2>/dev/null`
+PUBLICIP=`$kubectl_local get services twissandra --output=template --template="{{.spec.publicIPs}}" 2>/dev/null`
 # remove [] if present
 PUBLICIPS=`echo $PUBLICIP | tr -d '[]' | tr , '\n'`
 #
@@ -349,7 +349,7 @@ if [ -z "$VALIDIPS" ];then
     echo ""
     echo "Leaving demo up.  You may tear id down via ./demo-down.sh"
     echo "======!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!=================="
-    exit 99
+    #exit 99
 fi
 
 echo "===================================================================="

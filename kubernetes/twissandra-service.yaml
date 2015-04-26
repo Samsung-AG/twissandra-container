@@ -1,8 +1,13 @@
-id: twissandra
+apiVersion: v1beta3
 kind: Service
-apiVersion: v1beta1
-port: 8222
-containerPort: 8222
-publicIPs: [ 172.16.1.103, 172.16.1.104 ]
-selector:
-  name: twissandra
+metadata:
+    labels:
+        name: twissandra
+    name: twissandra
+spec:
+    ports:
+        - name: webui
+          port: 8222
+    publicIPs: [ 172.16.1.103 ]
+    selector:
+        name: twissandra

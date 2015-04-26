@@ -1,16 +1,17 @@
-id: twissandra
+apiVersion: v1beta3
 kind: Pod
-apiVersion: v1beta1
-desiredState:
-  manifest:
-    version: v1beta1
-    id: twissandra
+metadata:
+    labels:
+        name: twissandra
+    name: twissandra
+spec:
     containers:
       - name: twissandra
         image: mikeln/twissandra_img:v8
-        command:
+        args:
 #          - twiss-web
-        cpu: 100
+        limits:
+            cpu: 1
         ports:
           - name: web
             containerPort: 8222
@@ -18,9 +19,4 @@ desiredState:
             containerPort: 9042
           - name: thrift
             containerPort: 9160
-    restartPolicy: 
-      never: 
-        RestartPolicyNever: 
-labels:
-  name: twissandra
-    
+    restartPolicy: Never

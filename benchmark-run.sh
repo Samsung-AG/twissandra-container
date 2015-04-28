@@ -14,6 +14,9 @@ echo " "
 echo "=================================================="
 echo "   Attempting to Start the"
 echo "   Twissandra Kubernetes Demo"
+echo ""
+echo " args1: n = Do not run schema create."
+echo "            Default is y, which runs schema."
 echo "=================================================="
 echo "  !!! NOTE  !!!"
 echo "  This script uses our kraken project assumptions:"
@@ -34,6 +37,17 @@ trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; .
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods
 #----------------------
+CREATE_SCHEMA="y"
+if [ $# -ge 1 ]; then
+   if [ "$1" = "n" ]; then
+       CREATE_SCHEMA="n"
+       echo "Create Schema arg was 'n'.  Schema pass will not run."
+   else
+       echo "Create Schema arg was not 'n'.  Schema pass will run."
+   fi
+else
+   echo "Create Schema arg was not present.  Schema pass will run."
+fi
 #
 # check to see if kubectl has been configured
 #
@@ -107,92 +121,94 @@ echo " "
 echo "Services List:"
 $kubectl_local get services
 echo " "
-echo "+++++ Creating Needed Twissandra Schema ++++++++++++++++++++++++++++"
-#
-# check if already there... delete it in any case.  
-# (if it was finished, ok.  if pending, ok, if running...we'll run again anyway)
-#
-$kubectl_local get pods dataschema 2>/dev/null
-if [ $? -eq 0 ];then
+if [ "$CREATE_SCHEMA" = "y" ]; then
+    echo "+++++ Creating Needed Twissandra Schema ++++++++++++++++++++++++++++"
     #
-    # already there... delete it
+    # check if already there... delete it in any case.  
+    # (if it was finished, ok.  if pending, ok, if running...we'll run again anyway)
     #
-    echo "Twissandra dataschema pod alread present...deleting"
-    $kubectl_local delete pods dataschema 2>/dev/null
-    if [ $? -ne 0 ]; then
-        # problem with delete...ignore?
-        echo "Error deleting Twissandra dataschema pod...ignoring"
+    $kubectl_local get pods dataschema 2>/dev/null
+    if [ $? -eq 0 ];then
+        #
+        # already there... delete it
+        #
+        echo "Twissandra dataschema pod alread present...deleting"
+        $kubectl_local delete pods dataschema 2>/dev/null
+        if [ $? -ne 0 ]; then
+            # problem with delete...ignore?
+            echo "Error deleting Twissandra dataschema pod...ignoring"
+        fi
     fi
-fi
-# start a new one
-$kubectl_local create -f kubernetes/dataschema.yaml 2>/dev/null
-if [ $? -ne 0 ]; then
-    echo "Twissandra dataschema pod error"
-    . ./benchmark-down.sh
-    # clean up the potential mess
-    exit 3
-else
-    echo "Twissandra dataschema pod started"
-fi
-#
-# Wait until it finishes before proceeding
-#
-# allow 10 minutes for these to come up (120*5=600 sec)
-NUMTRIES=120
-LASTRET=1
-LASTSTATUS="unknown"
-while [ $NUMTRIES -ne 0 ] && ( [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ] ); do
-    let REMTIME=NUMTRIES*5
-    LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.status.phase}} 2>/dev/null`
-    LASTRET=$?
+    # start a new one
+    $kubectl_local create -f kubernetes/dataschema.yaml 2>/dev/null
     if [ $? -ne 0 ]; then
-        echo -n "Twissandra dataschema pod not found $REMTIME"
-        D=$NUMTRIES
-        while [ $D -ne 0 ]; do
-            echo -n "."
-            let D=D-1
-        done
-        echo -n "  $CR"
-        LASTSTATUS="unknown"
-        let NUMTRIES=NUMTRIES-1
-        sleep 5
+        echo "Twissandra dataschema pod error"
+        . ./benchmark-down.sh
+        # clean up the potential mess
+        exit 3
     else
-        #echo "Twissandra pod found $LASTSTATUS"
-        if [ "$LASTSTATUS" = "Failed" ]; then
-            echo ""
-            echo "Twissandra datachema pod: Failed!"
-        elif [ "$LASTSTATUS" = "Succeeded" ]; then
-            echo ""
-            echo "Twissandra datachema pod finished!"
-        else
-            echo -n "Twissandra datachema pod: $LASTSTATUS - NOT Succeeded $REMTIME secs remaining"
-            let D=NUMTRIES/2
+        echo "Twissandra dataschema pod started"
+    fi
+    #
+    # Wait until it finishes before proceeding
+    #
+    # allow 10 minutes for these to come up (120*5=600 sec)
+    NUMTRIES=120
+    LASTRET=1
+    LASTSTATUS="unknown"
+    while [ $NUMTRIES -ne 0 ] && ( [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ] ); do
+        let REMTIME=NUMTRIES*5
+        LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.status.phase}} 2>/dev/null`
+        LASTRET=$?
+        if [ $? -ne 0 ]; then
+            echo -n "Twissandra dataschema pod not found $REMTIME"
+            D=$NUMTRIES
             while [ $D -ne 0 ]; do
                 echo -n "."
                 let D=D-1
             done
             echo -n "  $CR"
+            LASTSTATUS="unknown"
             let NUMTRIES=NUMTRIES-1
             sleep 5
+        else
+            #echo "Twissandra pod found $LASTSTATUS"
+            if [ "$LASTSTATUS" = "Failed" ]; then
+                echo ""
+                echo "Twissandra datachema pod: Failed!"
+            elif [ "$LASTSTATUS" = "Succeeded" ]; then
+                echo ""
+                echo "Twissandra datachema pod finished!"
+            else
+                echo -n "Twissandra datachema pod: $LASTSTATUS - NOT Succeeded $REMTIME secs remaining"
+                let D=NUMTRIES/2
+                while [ $D -ne 0 ]; do
+                    echo -n "."
+                    let D=D-1
+                done
+                echo -n "  $CR"
+                let NUMTRIES=NUMTRIES-1
+                sleep 5
+            fi
         fi
+    done
+    echo ""
+    if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
+        echo "Twissandra dataschema pod did not finish in alotted time...exiting"
+        # clean up the potential mess
+        . ./benchmark-down.sh
+        exit 3
     fi
-done
-echo ""
-if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
-    echo "Twissandra dataschema pod did not finish in alotted time...exiting"
-    # clean up the potential mess
-    . ./benchmark-down.sh
-    exit 3
+    #
+    # now delete the pod ... it was successful and one-shot
+    #
+    $kubectl_local delete pods dataschema 2>/dev/null
+    if [ $? -ne 0 ]; then
+        # problem with delete...ignore?
+        echo "Error deleting Twissandra dataschema pod...ignoring"
+    fi
+    echo " "
 fi
-#
-# now delete the pod ... it was successful and one-shot
-#
-$kubectl_local delete pods dataschema 2>/dev/null
-if [ $? -ne 0 ]; then
-    # problem with delete...ignore?
-    echo "Error deleting Twissandra dataschema pod...ignoring"
-fi
-echo " "
 echo "+++++ Run the Benchmark ++++++++++++++++++++++++++++"
 #
 # check if already there... delete it in any case.  

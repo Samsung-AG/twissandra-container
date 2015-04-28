@@ -1,0 +1,13 @@
+apiVersion: v1beta3
+kind: Service
+metadata:
+    labels:
+        name: twissandra
+    name: twissandra
+spec:
+    ports:
+        - name: webui
+          port: 8222
+    publicIPs: [ 10.1.1.103 ]
+    selector:
+        name: twissandra

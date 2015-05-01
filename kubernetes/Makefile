@@ -5,7 +5,7 @@
 #
 # 2/20/2015 mln
 #
-VERSION := v9
+VERSION := v9slim
 #
 # do some repo evals... want everyone to use their own, unless building for the team
 #
@@ -38,12 +38,12 @@ build-all: build-app
 
 build-app: $(DOCKER_IMAGE)
 
-$(DOCKER_IMAGE): Dockerfile.app init.sh schema.sh inject.sh 
+$(DOCKER_IMAGE): Dockerfile.prod.slim init.sh prod.sh
 	@echo "building app $(VERSION)"
 	#
 	# workaround until docker 1.5.0 -f
-	cp Dockerfile.app Dockerfile
-	#docker build -f Dockerfile.inject -t $(REPO)/$(DOCKER_IMAGE):$(VERSION) .
+	cp Dockerfile.prod.slim Dockerfile
+	#docker build -f Dockerfile.prod.slim -t $(REPO)/$(DOCKER_IMAGE):$(VERSION) .
 	docker build -t $(REPO)/$(DOCKER_IMAGE):$(VERSION) --rm=true --force-rm=true .
 	@touch $@
 	@docker images $(REPO)/$(DOCKER_IMAGE)

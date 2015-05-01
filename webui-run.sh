@@ -33,7 +33,7 @@ echo "=================================================="
 #
 # setup trap for script signals
 #
-trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./demo-down.sh; exit 9 " SIGHUP SIGINT SIGTERM
+trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./webui-down.sh; exit 9 " SIGHUP SIGINT SIGTERM
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods
 #----------------------

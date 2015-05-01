@@ -8,7 +8,7 @@ spec:
     containers:
       - name: datainject
         image: mikeln/twissandra_img:v9
-        args:[ "twiss-inject" ]
+        args:[ 'twiss-prod','inj' ]
         limits:
             cpu: 1
         ports:

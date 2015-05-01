@@ -7,8 +7,8 @@ metadata:
 spec:
     containers:
       - name: dataschema
-        image: quay.io/mikeln/twissandra_img:v9
-        args: [ 'twiss-schema','db' ]
+        image: quay.io/mikeln/twissandra_img:v9slim
+        args: [ 'twiss-prod','db' ]
         limits:
             cpu: 1
         ports:

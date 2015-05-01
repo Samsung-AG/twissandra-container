@@ -1,0 +1,48 @@
+############################################################
+# Dockerfile to build Python WSGI Application Containers
+#
+# Builds an image that pulls github at runtime 
+# (vs now at image build)
+############################################################
+# Set the base image to wheezy...much smaller
+FROM debian:wheezy
+MAINTAINER Mikel Nelson <mikel.n@samsung.com>
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+       tar \
+       git \
+       curl \
+       net-tools \
+       build-essential \
+       libev4 \
+       libev-dev  \
+       python \
+       python-dev \
+       python-distribute \
+       python-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#
+# add ssh key for github
+#
+# ssh/ is prepopulated the docker_rsa.pub key must be in github account first!
+#
+COPY /ssh /root/.ssh
+RUN chmod 700 /root/.ssh \
+    && chmod 600 /root/.ssh/* \
+# get key of destination ...
+    && ssh-keyscan github.com >> /root/.ssh/known_hosts
+#
+# add container startup script
+#
+COPY init.sh /usr/local/bin/twiss-start
+COPY dev.sh /usr/local/bin/twiss-dev
+
+RUN chmod 755 /usr/local/bin/twiss-start \
+    && chmod 755 /usr/local/bin/twiss-dev
+
+# Expose ports
+EXPOSE 8222
+#
+USER root
+CMD [ "twiss-dev" ]

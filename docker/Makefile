@@ -5,7 +5,7 @@
 #
 # 2/20/2015 mln
 #
-VERSION := b0
+VERSION := b0slim
 #
 # do some repo evals... want everyone to use their own, unless building for the team
 #
@@ -14,6 +14,8 @@ DOCKER_REPO ?= $(DEFAULT_REPO)
 REPO := $(DOCKER_REPO)
 #
 #
+DOCKER_IMAGE := twissandra_dev_img
+
 repo-warning:
 	@if  [ $(DOCKER_REPO) =  $(DEFAULT_REPO) ]; then \
         echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"; \
@@ -30,93 +32,26 @@ repo-warning:
         echo "+++++++++++++++++++++++++++++++++++++++++++++++++++"; \
     fi
 
-REPO = mikeln
-
 all: build-all
 
-build-all: build-dbsetup build-inject build-app
+build-all: build-app
 
-build-inject: twissandra_inj_img
+build-app: $(DOCKER_IMAGE)
 
-twissandra_inj_img: Dockerfile.inject 
-	@echo "building inject $(VERSION)"
-	#
-	# workaround until docker 1.5.0 -f
-	cp Dockerfile.inject Dockerfile
-	#docker build -f Dockerfile.inject -t $(REPO)/twissandra_inj_img:$(VERSION) .
-	docker build -t $(REPO)/twissandra_inj_img:$(VERSION) --rm=true --force-rm=true .
-	@touch $@
-	@docker images $(REPO)/twissandra_inj_img
-
-build-dbsetup: twissandra_db_img
-
-twissandra_db_img: Dockerfile.dbsetup
-	@echo "building dbsetup $(VERSION)"
-	#
-	# workaround until docker 1.5.0 -f
-	cp Dockerfile.dbsetup Dockerfile
-	#docker build -f Dockerfile.inject -t $(REPO)/twissandra_db_img:$(VERSION) .
-	docker build -t $(REPO)/twissandra_db_img:$(VERSION) --rm=true --force-rm=true .
-	@touch $@
-	@docker images $(REPO)/twissandra_db_img
-
-build-app: twissandra_app_img
-
-twissandra_app_img: Dockerfile.app
+$(DOCKER_IMAGE): Dockerfile.dev.slim init.sh dev.sh
 	@echo "building app $(VERSION)"
 	#
 	# workaround until docker 1.5.0 -f
-	cp Dockerfile.app Dockerfile
-	#docker build -f Dockerfile.inject -t $(REPO)/twissandra_app_img:$(VERSION) .
-	docker build -t $(REPO)/twissandra_app_img:$(VERSION) --rm=true --force-rm=true .
+	cp Dockerfile.dev.slim Dockerfile
+	#docker build -f Dockerfile.dev.slim -t $(REPO)/twissandra_app_img:$(VERSION) .
+	docker build -t $(REPO)/$(DOCKER_IMAGE):$(VERSION) --rm=true --force-rm=true .
 	@touch $@
-	@docker images $(REPO)/twissandra_app_img
+	@docker images $(REPO)/$(DOCKER_IMAGE)
 
-build-dev: twissandra_dev_img
-
-twissandra_dev_img: Dockerfile.dev ssh build.sh
-	@echo "building dev $(VERSION)"
-	#
-	# workaround until docker 1.5.0 -f
-	cp Dockerfile.dev Dockerfile
-	#docker build -f Dockerfile.dev -t $(REPO)/twissandra_dev_img:$(VERSION) .
-	docker build -t $(REPO)/twissandra_dev_img:$(VERSION) --rm=true --force-rm=true .
-	@touch $@
-	@docker images $(REPO)/twissandra_dev_img
-
-build-shell: twissandra_shell_img
-
-twissandra_shell_img: Dockerfile.app
-	@echo "building shell $(VERSION)"
-	#
-	# workaround until docker 1.5.0 -f
-	cp Dockerfile.shell Dockerfile
-	#docker build -f Dockerfile.shell -t $(REPO)/twissandra_shell_img:$(VERSION) .
-	docker build -t $(REPO)/twissandra_shell_img:$(VERSION) --rm=true --force-rm=true .
-	@touch $@
-	@docker images $(REPO)/twissandra_shell_img
-
-
-
-clean: clean-dbsetup clean-inject clean-app
+clean: clean-app
 	-rm -f Dockerfile
 
-clean-inject: 
-	-docker rmi  $(REPO)/twissandra_inj_img:$(VERSION)
-	-rm -f twissandra_inj_img
-
-clean-dbsetup:
-	-docker rmi $(REPO)/twissandra_db_img:$(VERSION)
-	-rm -f twissandra_db_img
-
 clean-app:
-	-docker rmi $(REPO)/twissandra_app_img:$(VERSION)
-	-rm -f twissandra_app_img
+	-docker rmi $(REPO)/$(DOCKER_IMAGE):$(VERSION)
+	-rm -f $(DOCKER_IMAGE)
 
-clean-dev:
-	-docker rmi $(REPO)/twissandra_dev_img:$(VERSION)
-	-rm -f twissandra_dev_img
-
-clean-shell:
-	-docker rmi $(REPO)/twissandra_shell_img:$(VERSION)
-	-rm -f twissandra_shell_img

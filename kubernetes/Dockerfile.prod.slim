@@ -1,0 +1,60 @@
+############################################################
+# Dockerfile to build Python WSGI Application Containers
+############################################################
+# Set the base image to wheezy...much smaller
+FROM debian:wheezy
+MAINTAINER Mikel Nelson <mikel.n@samsung.com>
+
+COPY /ssh /root/.ssh
+#
+# put everything possible in one RUN statement so we can clean up
+# any disk usage before the layer is saved
+# 
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+       tar \
+       git \
+       curl \
+       net-tools \
+       build-essential \
+       libev4 \
+       libev-dev  \
+       python \
+       python-dev \
+       python-distribute \
+       python-pip \
+#
+# add ssh key for github
+# ssh/ is prepopulated the docker_rsa.pub key must be in github account first!
+#
+    && chmod 700 /root/.ssh \
+    && chmod 600 /root/.ssh/* \
+# get key of destination ...
+    && ssh-keyscan github.com >> /root/.ssh/known_hosts \
+    && eval "$(ssh-agent -s)" \
+    && ssh-add /root/.ssh/docker_rsa \
+    && ssh-add -l  \
+#RUN ssh -v -T -F /root/.ssh/config git@github.com 
+    && git clone git@github.com:mikeln/twissandra.git /twissandra  \
+    && pip install -r /twissandra/requirements.txt \
+#
+# remove uneeded packages
+#
+    && DEBIAN_FRONTEND=noninteractive apt-get remove -y --purge git \
+    && DEBIAN_FRONTEND=noninteractive apt-get autoremove -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#
+# add container startup script
+#
+COPY init.sh /usr/local/bin/twiss-start
+COPY prod.sh /usr/local/bin/twiss-prod
+
+RUN chmod 755 /usr/local/bin/twiss-start \
+    && chmod 755 /usr/local/bin/twiss-prod
+
+# Expose ports
+EXPOSE 8222
+#
+WORKDIR /twissandra
+USER root
+CMD [ "twiss-prod" ]

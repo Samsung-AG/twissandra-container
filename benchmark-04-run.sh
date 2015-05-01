@@ -7,6 +7,26 @@
 #
 # 4/23/2015 mikeln
 #-------
+#
+VERSION="1.0"
+function usage
+{
+    echo "Runs cassandra client - Benchmark 04 Injectors"
+    echo ""
+    echo "Usage:"
+    echo "   benchmark-04-run.sh [flags]"
+    echo ""
+    echo "Flags:"
+    echo "  -n, --noschema :: Flag to avoid running the schema creation step"
+    echo "  -c, --cluster : local : [local, aws, ???] selects the cluster yaml/json to use"
+    echo "  -h, -?, --help :: print usage"
+    echo "  -v, --version :: print script verion"
+    echo ""
+}
+function version
+{
+    echo "benchmark-04-run.sh version $VERSION"
+}
 # some best practice stuff
 CRLF=$'\n'
 CR=$'\r'
@@ -16,9 +36,7 @@ echo " "
 echo "=================================================="
 echo "   Attempting to Start the"
 echo "   Twissandra Kubernetes 4 pod Benchmark"
-echo ""
-echo " args1: n = Do not run schema create."
-echo "            Default is y, which runs schema."
+echo "   version: $VERSION"
 echo "=================================================="
 echo "  !!! NOTE  !!!"
 echo "  This script uses our kraken project assumptions:"
@@ -39,18 +57,46 @@ trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; .
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods
 #----------------------
-CREATE_SCHEMA="y"
-if [ $# -ge 1 ]; then
-   if [ "$1" = "n" ]; then
-       CREATE_SCHEMA="n"
-       echo "Create Schema arg was 'n'.  Schema pass will not run."
-   else
-       echo "Create Schema arg was not 'n'.  Schema pass will run."
-   fi
-else
-   echo "Create Schema arg was not present.  Schema pass will run."
-fi
 #
+## args
+#
+CLUSTER_LOC="local"
+CREATE_SCHEMA="y"
+TMP_LOC=$CLUSTER_LOC
+while [ "$1" != "" ]; do
+    case $1 in
+        -c | --cluster )
+            shift
+            TMP_LOC=$1
+            ;;
+        -n | --noschema )
+            CREATE_SCHEMA="n"
+            ;;
+        -v | --version )
+            version
+            exit
+            ;;
+        -h | -? | --help )
+            usage
+            exit
+            ;;
+         * )
+             usage
+             exit 1
+    esac
+    shift
+done
+if [ -z "$TMP_LOC" ] || ( [ "$TMP_LOC" != "aws" ] && [ "$TMP_LOC" != "local" ] );then
+    echo ""
+    echo "ERROR Invalid Cluster Location: $TMP_LOC"
+    echo ""
+    usage
+    exit 1
+else
+    CLUSTER_LOC=$TMP_LOC
+fi
+echo "Using Kubernetes cluster: $CLUSTER_LOC create schema: $CREATE_SCHEMA"
+
 # check to see if kubectl has been configured
 #
 echo " "

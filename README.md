@@ -16,11 +16,26 @@ Several bash scripts have been created to automate the creation and timing of th
 There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ````benchmark-04-run.sh```` and ````benchmark-04-down.sh````
 
 #### ````benchmark-run.sh```` 
+* Usage
+
+````
+        Usage:
+           benchmark-run.sh [flags]
+
+        Flags:
+             -n, --noschema :: Flag to avoid running the schema creation step
+             -c, --cluster : local : [local, aws, ???] selects the cluster yaml/json to use
+             -h, -?, --help :: print usage
+             -v, --version :: print script verion 
+````
+
 * Locates the Kubectl needed for Kraken
 * Locates the .kubeconfig in the kraken/kubernetes directory
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
-      kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+````
+        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+````
 
 * Checks that the Cassandra service is running
 * Runs the Twissandra dataschema creation Pod
@@ -37,7 +52,9 @@ There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ```
 * Locates the .kubeconfig in the kraken/kubernetes directory
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
-      kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+````
+        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+````
 
 * Removes the Datachema (if present) and Benchmark Pods
 
@@ -56,14 +73,29 @@ The demo creates the Twissandra schema in a connected Cassandra DB cluster, then
 ### Scripts
 Several bash scripts have been created to automate the creation of the demo.  They automate the sequence documented below.  Note that these scripts assume you are running on a Kraken CoreOS cluster using those IPs and names, and that you have a running Cassandra cluster.
 
-There are 2 scripts: ````demo-run.sh```` and ````demo-down.sh````.  
+There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.  
 
-#### ````demo-run.sh```` 
+#### ````webui-run.sh```` 
+* Usage
+
+````
+        Usage:
+           webui-run.sh [flags]
+
+        Flags:
+             -n, --noschema :: Flag to avoid running the schema creation step
+             -c, --cluster : local : [local, aws, ???] selects the cluster yaml/json to use
+             -h, -?, --help :: print usage
+             -v, --version :: print script verion 
+````
+
 * Locates the Kubectl needed for Kraken
 * Locates the .kubeconfig in the kraken/kubernetes directory
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
-      kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+````
+        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+````
 
 * Checks that the Cassandra service is running
 * Runs the Twissandra dataschema creation Pod
@@ -74,7 +106,7 @@ There are 2 scripts: ````demo-run.sh```` and ````demo-down.sh````.
 * Control-C at any point will terminate and tear down the entire setup (via ````demo-down.sh````)
 * Any error will terminate and tear down the entire setup (via ````demo-down.sh````)
 
-#### ````demo-down.sh````
+#### ````webui-down.sh````
 * Locates the Kubectl needed for Kraken
 * Locates the .kubeconfig in the kraken/kubernetes directory
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:

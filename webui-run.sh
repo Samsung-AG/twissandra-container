@@ -5,6 +5,26 @@
 #
 # 4/20/2015 mikeln
 #-------
+#
+VERSION="1.0"
+function usage
+{
+    echo "Runs cassandra client - Twissandra"
+    echo ""
+    echo "Usage:"
+    echo "   webui-run.sh [flags]"
+    echo ""
+    echo "Flags:"
+    echo "  -n, --noschema :: Flag to avoid running the schema creation step"
+    echo "  -c, --cluster : local : [local, aws, ???] selects the cluster yaml/json to use"
+    echo "  -h, -?, --help :: print usage"
+    echo "  -v, --version :: print script verion"
+    echo ""
+}
+function version
+{
+    echo "webui-run.sh version $VERSION"
+}
 # some best practice stuff
 CRLF=$'\n'
 CR=$'\r'
@@ -14,9 +34,7 @@ echo " "
 echo "=================================================="
 echo "   Attempting to Start the"
 echo "   Twissandra Kubernetes Demo"
-echo ""
-echo " args1: n = Do not run schema create."
-echo "            Default is y, which runs schema."
+echo "   version: $VERSION"
 echo "=================================================="
 echo "  !!! NOTE  !!!"
 echo "  This script uses our kraken project assumptions:"
@@ -37,17 +55,45 @@ trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; .
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods
 #----------------------
+# process args
+#
+CLUSTER_LOC="local"
 CREATE_SCHEMA="y"
-if [ $# -ge 1 ]; then
-   if [ "$1" = "n" ]; then
-       CREATE_SCHEMA="n"
-       echo "Create Schema arg was 'n'.  Schema pass will not run."
-   else
-       echo "Create Schema arg was not 'n'.  Schema pass will run."
-   fi
+TMP_LOC=$CLUSTER_LOC
+while [ "$1" != "" ]; do
+    case $1 in
+        -c | --cluster )
+            shift
+            TMP_LOC=$1
+            ;;
+        -n | --noschema )
+            CREATE_SCHEMA="n"
+            ;;
+        -v | --version )
+            version
+            exit
+            ;;
+        -h | -? | --help )
+            usage
+            exit
+            ;;
+         * )
+             usage
+             exit 1
+    esac
+    shift
+done
+if [ -z "$TMP_LOC" ] || ( [ "$TMP_LOC" != "aws" ] && [ "$TMP_LOC" != "local" ] );then
+    echo ""
+    echo "ERROR Invalid Cluster Location: $TMP_LOC"
+    echo ""
+    usage
+    exit 1
 else
-   echo "Create Schema arg was not present.  Schema pass will run."
+    CLUSTER_LOC=$TMP_LOC
 fi
+echo "Using Kubernetes cluster: $CLUSTER_LOC create schema: $CREATE_SCHEMA"
+
 #
 # check to see if kubectl has been configured
 #
@@ -126,7 +172,7 @@ if [ $? -ne 0 ]; then
     $kubectl_local create -f kubernetes/twissandra-service.yaml
     if [ $? -ne 0 ]; then
         echo "Twissandra service start error"
-        . ./demo-down.sh
+        . ./webui-down.sh
         # clean up the potential mess
         exit 2
     else
@@ -150,7 +196,7 @@ if [ $? -ne 0 ]; then
         if [ $NUMTRIES -le 0 ]; then
             echo "Twissandra Service did not start in alotted time...exiting"
             # clean up the potential mess
-            . ./demo-down.sh
+            . ./webui-down.sh
             exit 2
         fi
     fi
@@ -184,7 +230,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     $kubectl_local create -f kubernetes/dataschema.yaml 2>/dev/null
     if [ $? -ne 0 ]; then
         echo "Twissandra dataschema pod error"
-        . ./demo-down.sh
+        . ./webui-down.sh
         # clean up the potential mess
         exit 3
     else
@@ -237,7 +283,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
         echo "Twissandra dataschema pod did not finish in alotted time...exiting"
         # clean up the potential mess
-        . ./demo-down.sh
+        . ./webui-down.sh
         exit 3
     fi
     #
@@ -260,7 +306,7 @@ if [ $? -ne 0 ];then
     $kubectl_local create -f kubernetes/twissandra.yaml
     if [ $? -ne 0 ]; then
         echo "Twissandra pod error"
-        . ./demo-down.sh
+        . ./webui-down.sh
         # clean up the potential mess
         exit 3
     else
@@ -319,7 +365,7 @@ echo ""
 if [ $NUMTRIES -le 0 ]; then
     echo "Twissandra pod did not start in alotted time...exiting"
     # clean up the potential mess
-    . ./demo-down.sh
+    . ./webui-down.sh
     exit 3
 fi
 echo " "
@@ -363,7 +409,7 @@ if [ -z "$VALIDIPS" ];then
     echo "Please correct your twissandra-service.yaml file publicIPs: entry to include"
     echo "at least one of the Node IPs lists above"
     echo ""
-    echo "Leaving demo up.  You may tear id down via ./demo-down.sh"
+    echo "Leaving demo up.  You may tear id down via ./webui-down.sh"
     echo "======!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!=================="
     #exit 99
 fi
@@ -379,7 +425,7 @@ for ip in ${VALIDIPS};do
 echo "      $ip:${PUBLICPORT}"
 done
 echo " "
-echo " Please run ./demo-down.sh to stop and remove the demo when you"
+echo " Please run ./webui-down.sh to stop and remove the demo when you"
 echo " are finished."
 echo " "
 echo "===================================================================="

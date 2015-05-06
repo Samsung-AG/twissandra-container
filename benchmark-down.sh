@@ -5,6 +5,24 @@
 #-------
 # some best practice stuff
 unset CDPATH
+VERSION="1.0"
+function usage
+{
+    echo "Stops benchmark"
+    echo ""
+    echo "Usage:"
+    echo "   benchmark-down.sh [flags]"
+    echo ""
+    echo "Flags:"
+    echo "  -c, --cluster : local : [local, aws, ???] selects the cluster yaml/json to use"
+    echo "  -h, -?, --help :: print usage"
+    echo "  -v, --version :: print script verion"
+    echo ""
+}
+function version
+{
+    echo "benchmark-down.sh version $VERSION"
+}
 #
 echo " "
 echo "=================================================="
@@ -14,6 +32,38 @@ echo "=================================================="
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods
 #----------------------
+CLUSTER_LOC="local"
+TMP_LOC=$CLUSTER_LOC
+while [ "$1" != "" ]; do
+    case $1 in
+        -c | --cluster )
+            shift
+            TMP_LOC=$1
+            ;;
+        -v | --version )
+            version
+            exit
+            ;;
+        -h | -? | --help )
+            usage
+            exit
+            ;;
+         * )
+             usage
+             exit 1
+    esac
+    shift
+done
+if [ -z "$TMP_LOC" ];then
+    echo ""
+    echo "ERROR No Cluster Supplied."
+    echo ""
+    usage
+    exit 1
+else
+    CLUSTER_LOC=$TMP_LOC
+fi
+echo "Using Kubernetes cluster: $CLUSTER_LOC"
 #
 # check to see if kubectl has be configured
 #
@@ -33,9 +83,9 @@ if [ $? -ne 0 ];then
 else
     echo "found: $KRAKENDIR"
 fi
-KUBECONFIG=`find ${KRAKENDIR} -type f -name ".kubeconfig" -print | egrep 'kubernetes'`
+KUBECONFIG=`find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC} -type f -name ".kubeconfig" -print | egrep '.*'`
 if [ $? -ne 0 ];then
-    echo "Could not find Kraken .kubeconfig"
+    echo "Could not find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC}/.kubeconfig"
 else
     echo "found: $KUBECONFIG"
 fi

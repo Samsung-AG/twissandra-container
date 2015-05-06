@@ -48,10 +48,6 @@ echo ""
 echo "  You must have a cassandra cluster running and"
 echo "  the cassandra-service advertised"
 echo "=================================================="
-#
-# setup trap for script signals
-#
-trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./webui-down.sh; exit 9 " SIGHUP SIGINT SIGTERM
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods
 #----------------------
@@ -83,9 +79,9 @@ while [ "$1" != "" ]; do
     esac
     shift
 done
-if [ -z "$TMP_LOC" ] || ( [ "$TMP_LOC" != "aws" ] && [ "$TMP_LOC" != "local" ] );then
+if [ -z "$TMP_LOC" ];then
     echo ""
-    echo "ERROR Invalid Cluster Location: $TMP_LOC"
+    echo "ERROR No Cluster Supplied"
     echo ""
     usage
     exit 1
@@ -93,7 +89,10 @@ else
     CLUSTER_LOC=$TMP_LOC
 fi
 echo "Using Kubernetes cluster: $CLUSTER_LOC create schema: $CREATE_SCHEMA"
-
+#
+# setup trap for script signals
+#
+trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./webui-down.sh --cluster $CLUSTER_LOC; exit 9 " SIGHUP SIGINT SIGTERM
 #
 # check to see if kubectl has been configured
 #
@@ -113,9 +112,10 @@ if [ $? -ne 0 ];then
 else
     echo "found: $KRAKENDIR"
 fi
-KUBECONFIG=`find ${KRAKENDIR} -type f -name ".kubeconfig" -print | egrep 'kubernetes'`
+KUBECONFIG=`find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC} -type f -name ".kubeconfig" -print | egrep '.*'`
 if [ $? -ne 0 ];then
-    echo "Could not find Kraken .kubeconfig"
+    echo "Could not find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC}/.kubeconfig"
+    exit 1
 else
     echo "found: $KUBECONFIG"
 fi
@@ -172,7 +172,7 @@ if [ $? -ne 0 ]; then
     $kubectl_local create -f kubernetes/twissandra-service.yaml
     if [ $? -ne 0 ]; then
         echo "Twissandra service start error"
-        . ./webui-down.sh
+        . ./webui-down.sh --cluster $CLUSTER_LOC
         # clean up the potential mess
         exit 2
     else
@@ -196,7 +196,7 @@ if [ $? -ne 0 ]; then
         if [ $NUMTRIES -le 0 ]; then
             echo "Twissandra Service did not start in alotted time...exiting"
             # clean up the potential mess
-            . ./webui-down.sh
+            . ./webui-down.sh --cluster $CLUSTER_LOC
             exit 2
         fi
     fi
@@ -230,7 +230,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     $kubectl_local create -f kubernetes/dataschema.yaml 2>/dev/null
     if [ $? -ne 0 ]; then
         echo "Twissandra dataschema pod error"
-        . ./webui-down.sh
+        . ./webui-down.sh --cluster $CLUSTER_LOC
         # clean up the potential mess
         exit 3
     else
@@ -283,7 +283,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
         echo "Twissandra dataschema pod did not finish in alotted time...exiting"
         # clean up the potential mess
-        . ./webui-down.sh
+        . ./webui-down.sh --cluster $CLUSTER_LOC
         exit 3
     fi
     #
@@ -306,7 +306,7 @@ if [ $? -ne 0 ];then
     $kubectl_local create -f kubernetes/twissandra.yaml
     if [ $? -ne 0 ]; then
         echo "Twissandra pod error"
-        . ./webui-down.sh
+        . ./webui-down.sh --cluster $CLUSTER_LOC
         # clean up the potential mess
         exit 3
     else
@@ -365,7 +365,7 @@ echo ""
 if [ $NUMTRIES -le 0 ]; then
     echo "Twissandra pod did not start in alotted time...exiting"
     # clean up the potential mess
-    . ./webui-down.sh
+    . ./webui-down.sh --cluster $CLUSTER_LOC
     exit 3
 fi
 echo " "
@@ -409,7 +409,7 @@ if [ -z "$VALIDIPS" ];then
     echo "Please correct your twissandra-service.yaml file publicIPs: entry to include"
     echo "at least one of the Node IPs lists above"
     echo ""
-    echo "Leaving demo up.  You may tear id down via ./webui-down.sh"
+    echo "Leaving demo up.  You may tear id down via ./webui-down.sh --cluster $CLUSTER_LOC"
     echo "======!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!=================="
     #exit 99
 fi
@@ -425,7 +425,7 @@ for ip in ${VALIDIPS};do
 echo "      $ip:${PUBLICPORT}"
 done
 echo " "
-echo " Please run ./webui-down.sh to stop and remove the demo when you"
+echo " Please run ./webui-down.sh --cluster $CLUSTER_LOC to stop and remove the demo when you"
 echo " are finished."
 echo " "
 echo "===================================================================="

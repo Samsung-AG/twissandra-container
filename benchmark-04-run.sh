@@ -50,10 +50,6 @@ echo ""
 echo "  You must have a cassandra cluster running and"
 echo "  the cassandra-service advertised"
 echo "=================================================="
-#
-# setup trap for script signals
-#
-trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./benchmark-04-down.sh; exit 9 " SIGHUP SIGINT SIGTERM
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods
 #----------------------
@@ -86,9 +82,9 @@ while [ "$1" != "" ]; do
     esac
     shift
 done
-if [ -z "$TMP_LOC" ] || ( [ "$TMP_LOC" != "aws" ] && [ "$TMP_LOC" != "local" ] );then
+if [ -z "$TMP_LOC" ];then
     echo ""
-    echo "ERROR Invalid Cluster Location: $TMP_LOC"
+    echo "ERROR No Cluster Supplied."
     echo ""
     usage
     exit 1
@@ -96,7 +92,10 @@ else
     CLUSTER_LOC=$TMP_LOC
 fi
 echo "Using Kubernetes cluster: $CLUSTER_LOC create schema: $CREATE_SCHEMA"
-
+#
+# setup trap for script signals
+#
+trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./benchmark-04-down.sh --cluster $CLUSTER_LOC; exit 9 " SIGHUP SIGINT SIGTERM
 # check to see if kubectl has been configured
 #
 echo " "
@@ -115,9 +114,10 @@ if [ $? -ne 0 ];then
 else
     echo "found: $KRAKENDIR"
 fi
-KUBECONFIG=`find ${KRAKENDIR} -type f -name ".kubeconfig" -print | egrep 'kubernetes'`
+KUBECONFIG=`find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC} -type f -name ".kubeconfig" -print | egrep '.*'`
 if [ $? -ne 0 ];then
-    echo "Could not find Kraken .kubeconfig"
+    echo "Could not find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC}/.kubeconfig"
+    exit 1
 else
     echo "found: $KUBECONFIG"
 fi
@@ -191,7 +191,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     $kubectl_local create -f kubernetes/dataschema.yaml 2>/dev/null
     if [ $? -ne 0 ]; then
         echo "Twissandra dataschema pod error"
-        . ./benchmark-04-down.sh
+        . ./benchmark-04-down.sh --cluster $CLUSTER_LOC
         # clean up the potential mess
         exit 3
     else
@@ -244,7 +244,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
         echo "Twissandra dataschema pod did not finish in alotted time...exiting"
         # clean up the potential mess
-        . ./benchmark-04-down.sh
+        . ./benchmark-04-down.sh --cluster $CLUSTER_LOC
         exit 3
     fi
     #
@@ -279,7 +279,7 @@ fi
 $kubectl_local create -f kubernetes/benchmark-01.yaml 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "Twissandra benchmark-01 pod error"
-    . ./benchmark-04-down.sh
+    . ./benchmark-04-down.sh --cluster $CLUSTER_LOC
     # clean up the potential mess
     exit 3
 else
@@ -288,7 +288,7 @@ fi
 $kubectl_local create -f kubernetes/benchmark-02.yaml 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "Twissandra benchmark-02 pod error"
-    . ./benchmark-04-down.sh
+    . ./benchmark-04-down.sh --cluster $CLUSTER_LOC
     # clean up the potential mess
     exit 3
 else
@@ -297,7 +297,7 @@ fi
 $kubectl_local create -f kubernetes/benchmark-03.yaml 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "Twissandra benchmark-03 pod error"
-    . ./benchmark-04-down.sh
+    . ./benchmark-04-down.sh --cluster $CLUSTER_LOC
     # clean up the potential mess
     exit 3
 else
@@ -306,7 +306,7 @@ fi
 $kubectl_local create -f kubernetes/benchmark-04.yaml 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "Twissandra benchmark-04 pod error"
-    . ./benchmark-04-down.sh
+    . ./benchmark-04-down.sh --cluster $CLUSTER_LOC
     # clean up the potential mess
     exit 3
 else
@@ -392,7 +392,7 @@ echo ""
 if [ $NUMTRIES -le 0 ] || [ "$LASTSTATUS" = "Failed" ]; then
     echo "Twissandra benchmark-04 pod did not start in alotted time...exiting"
     # clean up the potential mess
-    . ./benchmark-04-down.sh
+    . ./benchmark-04-down.sh --cluster $CLUSTER_LOC
     exit 3
 fi
 #

@@ -48,6 +48,18 @@ There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ```
 * Any error will terminate and tear down the entire setup (via ````benchmark-down.sh````)
 
 #### ````benchmark-down.sh````
+* Usage
+
+````
+        Usage:
+           benchmakr-down.sh [flags]
+
+        Flags:
+             -c, --cluster : local : [local, aws, ???] selects the cluster yaml/json to use
+             -h, -?, --help :: print usage
+             -v, --version :: print script verion
+````
+
 * Locates the Kubectl needed for Kraken
 * Locates the .kubeconfig in the kraken/kubernetes directory
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
@@ -108,6 +120,18 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
 
 #### ````webui-down.sh````
 * Locates the Kubectl needed for Kraken
+* Usage
+
+````
+        Usage:
+           webui-down.sh [flags]
+
+        Flags:
+             -c, --cluster : local : [local, aws, ???] selects the cluster yaml/json to use
+             -h, -?, --help :: print usage
+             -v, --version :: print script verion
+````
+
 * Locates the .kubeconfig in the kraken/kubernetes directory
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 

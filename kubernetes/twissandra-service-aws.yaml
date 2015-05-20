@@ -8,6 +8,6 @@ spec:
     ports:
         - name: webui
           port: 8222
-    publicIPs: [ 10.1.1.103 ]
+    publicIPs: [ 10.1.102.103 ]
     selector:
         name: twissandra

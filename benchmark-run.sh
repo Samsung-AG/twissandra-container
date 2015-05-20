@@ -186,7 +186,17 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
         fi
     fi
     # start a new one
-    $kubectl_local create -f kubernetes/dataschema.yaml 2>/dev/null
+    # 
+    # find yaml for correct target
+    #
+    DATASCHEMA_POD_BASE_NAME="kubernetes/dataschema"
+    DATASCHEMA_YAML="$DATASCHEMA_POD_BASE_NAME-$CLUSTER_LOC.yaml"
+    if [ ! -f "$DATASCHEMA_YAML" ]; then
+        echo "WARNING $DATASCHEMA_YAML not found.  Using $DATASCHEMA_POD_BASE_NAME.yaml instead."
+        DATASCHEMA_YAML="$DATASCHEMA_POD_BASE_NAME.yaml"
+    fi
+
+    $kubectl_local create -f $DATASCHEMA_YAML 2>/dev/null
     if [ $? -ne 0 ]; then
         echo "Twissandra dataschema pod error"
         . ./benchmark-down.sh --cluster $CLUSTER_LOC
@@ -273,7 +283,17 @@ if [ $? -eq 0 ];then
     fi
 fi
 # start a new one
-$kubectl_local create -f kubernetes/benchmark.yaml 2>/dev/null
+# 
+# find yaml for correct target
+#
+BENCHMARK_POD_BASE_NAME="kubernetes/benchmark"
+BENCHMARK_YAML="$BENCHMARK_POD_BASE_NAME-$CLUSTER_LOC.yaml"
+if [ ! -f "$BENCHMARK_YAML" ]; then
+    echo "WARNING $BENCHMARK_YAML not found.  Using $BENCHMARK_POD_BASE_NAME.yaml instead."
+    BENCHMARK_YAML="$BENCHMARK_POD_BASE_NAME.yaml"
+fi
+
+$kubectl_local create -f $BENCHMARK_YAML 2>/dev/null
 if [ $? -ne 0 ]; then
     echo "Twissandra benchmark pod error"
     . ./benchmark-down.sh --cluster $CLUSTER_LOC

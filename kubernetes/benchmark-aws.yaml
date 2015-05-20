@@ -2,13 +2,13 @@ apiVersion: v1beta3
 kind: Pod
 metadata:
     labels:
-        name: dataschema
-    name: dataschema
+        name: benchmark
+    name: benchmark
 spec:
     containers:
-      - name: dataschema
-        image: dockerrepo.mineco.lab:5000/twissandra_img:v9slim
-        args: [ 'twiss-prod','db' ]
+      - name: benchmark
+        image: quay.io/mikeln/twissandra_img:v9slim
+        args: [ 'twiss-prod','bench' ]
         limits:
             cpu: 1
         ports:
@@ -20,4 +20,3 @@ spec:
       - name: data
         emptyDir: {}
     restartPolicy: Never
-    

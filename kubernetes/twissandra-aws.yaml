@@ -2,22 +2,20 @@ apiVersion: v1beta3
 kind: Pod
 metadata:
     labels:
-        name: dataschema
-    name: dataschema
+        name: twissandra
+    name: twissandra
 spec:
     containers:
-      - name: dataschema
-        image: dockerrepo.mineco.lab:5000/twissandra_img:v9slim
-        args: [ 'twiss-prod','db' ]
+      - name: twissandra
+        image: quay.io/mikeln/twissandra_img:v9slim
+        args: [ 'twiss-prod','app' ]
         limits:
             cpu: 1
         ports:
+          - name: web
+            containerPort: 8222
           - name: cql
             containerPort: 9042
           - name: thrift
             containerPort: 9160
-    volumes:
-      - name: data
-        emptyDir: {}
     restartPolicy: Never
-    

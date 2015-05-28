@@ -34,7 +34,7 @@ There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ```
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
 ````
-        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --cluster=local'
 ````
 
 * Checks that the Cassandra service is running
@@ -65,7 +65,7 @@ There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ```
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
 ````
-        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --cluster=local'
 ````
 
 * Removes the Datachema (if present) and Benchmark Pods
@@ -106,7 +106,7 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
 ````
-        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+        kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --cluster=local'
 ````
 
 * Checks that the Cassandra service is running
@@ -135,7 +135,7 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
 * Locates the .kubeconfig in the kraken/kubernetes directory
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
-      kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig='\''/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig'\'''
+      kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --cluster=local'
 
 * Removes all services
 * Removes the Datachema (if present) and Twissandra Pods
@@ -166,7 +166,7 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
     found: /Users/mikel_nelson/dev/cloud/kraken
     found: /Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig
     found: /opt/kubernetes/platforms/darwin/amd64/kubectl
-    kubectl present: /opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig=/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig
+    kubectl present: /opt/kubernetes/platforms/darwin/amd64/kubectl --cluster=local
 
     +++++ finding Kubernetes Nodes services ++++++++++++++++++++++++++++
     Kubernetes minions (nodes) IP(s):

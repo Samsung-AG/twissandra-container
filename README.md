@@ -30,7 +30,23 @@ There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ```
 ````
 
 * Locates the Kubectl needed for Kraken
-* Locates the .kubeconfig in the kraken/kubernetes directory
+* Uses ~/.kube/config. Requires an entry exists for the desired cluster. Example for local:
+
+````
+        apiVersion: v1
+        clusters:
+        - cluster:
+            api-version: v1beta3
+            server: http://172.16.1.102:8080
+          name: local
+        contexts: []
+        current-context: ""
+        kind: Config
+        preferences: {}
+        users: []
+
+````
+
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
 ````
@@ -102,7 +118,23 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
 ````
 
 * Locates the Kubectl needed for Kraken
-* Locates the .kubeconfig in the kraken/kubernetes directory
+* Uses ~/.kube/config. Requires an entry exists for the desired cluster. Example for local:
+
+````
+        apiVersion: v1
+        clusters:
+        - cluster:
+            api-version: v1beta3
+            server: http://172.16.1.102:8080
+          name: local
+        contexts: []
+        current-context: ""
+        kind: Config
+        preferences: {}
+        users: []
+
+````
+
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
 ````
@@ -132,7 +164,23 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
              -v, --version :: print script verion
 ````
 
-* Locates the .kubeconfig in the kraken/kubernetes directory
+* Uses ~/.kube/config. Requires an entry exists for the desired cluster. Example for local:
+
+````
+        apiVersion: v1
+        clusters:
+        - cluster:
+            api-version: v1beta3
+            server: http://172.16.1.102:8080
+          name: local
+        contexts: []
+        current-context: ""
+        kind: Config
+        preferences: {}
+        users: []
+
+````
+
 * Uses the information to construct the correct ````kubectl```` command.  e.g.:
 
       kubectl='/opt/kubernetes/platforms/darwin/amd64/kubectl --cluster=local'

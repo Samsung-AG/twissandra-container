@@ -23,6 +23,11 @@ function version
 {
     echo "benchmark-04-down.sh version $VERSION"
 }
+
+# XXX: this won't work if the last component is a symlink
+my_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+. ${my_dir}/utils.sh
+
 #
 echo " "
 echo "=================================================="
@@ -86,15 +91,8 @@ if [ $? -ne 0 ];then
 else
     echo "found: $KRAKENDIR"
 fi
-#KUBECONFIG=`find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC} -type f -name ".kubeconfig" -print | egrep '.*'`
-#if [ $? -ne 0 ];then
-#    echo "Could not find ${KRAKENDIR}/kubernetes/${CLUSTER_LOC}/.kubeconfig"
-#    exit 1
-#else
-#    echo "found: $KUBECONFIG"
-#fi
 
-KUBECTL=`find /opt/kubernetes/platforms/darwin/amd64 -type f -name "kubectl" -print | egrep '.*'`
+KUBECTL=$(locate_kubectl)
 if [ $? -ne 0 ];then
     echo "Could not find kubectl."
     exit 1
@@ -102,8 +100,6 @@ else
     echo "found: $KUBECTL"
 fi
 
-#kubectl_local="/opt/kubernetes/platforms/darwin/amd64/kubectl --kubeconfig=/Users/mikel_nelson/dev/cloud/kraken/kubernetes/.kubeconfig"
-#kubectl_local="${KUBECTL} --kubeconfig=${KUBECONFIG}"
 kubectl_local="${KUBECTL} --cluster=${CLUSTER_LOC}"
 
 CMDTEST=`$kubectl_local version`   

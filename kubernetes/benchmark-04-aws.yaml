@@ -7,7 +7,7 @@ metadata:
 spec:
     containers:
       - name: benchmark
-        image: quay.io/mikeln/twissandra_img:v9slim
+        image: quay.io/mikeln/twissandra_img:v11slim
         args: [ 'twiss-prod','bench' ]
         limits:
             cpu: 4

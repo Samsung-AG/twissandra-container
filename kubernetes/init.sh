@@ -15,24 +15,30 @@
 # whether or not we are acutally running kubernetes.  KUBERNETES_RO_* should only be 
 # set by Kubernetes
 #
-INKUB=`env | grep ^KUBERNETES_RO`
+INKUB=`env | grep ^KUBERNETES_SERVICE`
 if [ -n "$INKUB" ]; then
+	#
+	# lookup name in cluster DNS...
+	#
+	# cassandra.default[.svc.kuberenets.local] 
+	#  this can be placed directly in the twissandra code...or the name substituted in.
+	#
     # in kubernetes
-    echo "Running inside Kubernetes"
+    echo "Running inside Kubernetes using cluster DNS instead of ENV vars"
     #
     # note: this is the expect hostname in the app: cass
     #
-    CASSHOSTNAME="cass"
+#    CASSHOSTNAME="cass"
     #
     # find the cassandra service: we only need the host IP... ports are a given 9042, 9160
     #
-    CASSIP=`env | grep CASSANDRA_SERVICE_HOST | cut -d "=" -f 2`
-    if [ -n "$CASSIP" ]; then
-        echo "Found Cassandra Service at IP: $CASSIP"
+#    CASSIP=`env | grep CASSANDRA_SERVICE_HOST | cut -d "=" -f 2`
+#    if [ -n "$CASSIP" ]; then
+#        echo "Found Cassandra Service at IP: $CASSIP"
         #
         # simulate DOCKER by adding to /etc/hosts file
         #
-        echo "$CASSIP $CASSHOSTNAME" >> /etc/hosts
+#        echo "$CASSIP $CASSHOSTNAME" >> /etc/hosts
         #
         # modify the python file directly (the /etc/hosts hack does not appear to work consistently)
         #  
@@ -43,13 +49,13 @@ if [ -n "$INKUB" ]; then
         #
         # here is the real config
 #        sed -i -e "s/'cass'/'$CASSIP'/" /twissandra/settings.py
-        echo "hosts change ------------------"
-        cat /etc/hosts
-        echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-    else
-        echo "WARNING no cassandra kubernetes service info was found.  Is it running?"
+#        echo "hosts change ------------------"
+#        cat /etc/hosts
+#        echo "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+#    else
+#        echo "WARNING no cassandra kubernetes service info was found.  Is it running?"
 #        exit 1
-    fi
+#    fi
 else
     echo "Running inside Docker only...nothing to do"
 fi

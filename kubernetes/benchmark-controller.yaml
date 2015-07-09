@@ -12,7 +12,7 @@ desiredState:
         id: benchmark
         containers:
           - name: benchmark
-            image: quay.io/mikeln/twissandra_img:v9slim
+            image: quay.io/mikeln/twissandra_kub:v11slim
             command: [ 'twiss-prod','bench' ]
             cpu: 100
             ports:

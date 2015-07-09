@@ -4,6 +4,7 @@
 Makefile
 Dockerfile.*
 twissandra_img
+twissandra_kub
 *.yaml
 zzz*
 README.md

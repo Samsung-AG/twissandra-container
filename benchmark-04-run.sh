@@ -54,8 +54,8 @@ echo "  up and Running.  "
 echo ""
 echo "  And you must have your ~/.kube/config for you cluster set up.  e.g."
 echo " "
-echo "  local: kubectl config set-cluster local --server=http://172.16.1.102:8080 --api-version=v1beta3"
-echo "  aws:   kubectl config set-cluster aws --server=http:////52.25.218.223:8080 --api-version=v1beta3"
+echo "  local: kubectl config set-cluster local --server=http://172.16.1.102:8080 "
+echo "  aws:   kubectl config set-cluster aws --server=http:////52.25.218.223:8080 "
 echo "=================================================="
 #----------------------
 # start the services first...this is so the ENV vars are available to the pods

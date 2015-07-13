@@ -36,7 +36,7 @@ There are 4 scripts: ````benchmark-run.sh```` and ````benchmark-down.sh````, ```
         apiVersion: v1
         clusters:
         - cluster:
-            api-version: v1beta3
+            api-version: v1
             server: http://172.16.1.102:8080
           name: local
         contexts: []
@@ -124,7 +124,7 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
         apiVersion: v1
         clusters:
         - cluster:
-            api-version: v1beta3
+            api-version: v1
             server: http://172.16.1.102:8080
           name: local
         contexts: []
@@ -170,7 +170,7 @@ There are 2 scripts: ````webui-run.sh```` and ````webui-down.sh````.
         apiVersion: v1
         clusters:
         - cluster:
-            api-version: v1beta3
+            api-version: v1
             server: http://172.16.1.102:8080
           name: local
         contexts: []

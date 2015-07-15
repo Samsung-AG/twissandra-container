@@ -3,7 +3,7 @@
 # Script to stop all the pieces of the twissandra cluster benchmark
 #
 #-------
-VERSION="1.0"
+VERSION="2.0"
 function usage
 {
     echo "Stops benchmark"

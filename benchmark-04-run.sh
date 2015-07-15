@@ -9,7 +9,7 @@
 # 4/23/2015 mikeln
 #-------
 #
-VERSION="1.0"
+VERSION="2.0"
 function usage
 {
     echo "Runs cassandra client - Benchmark 04 Injectors"

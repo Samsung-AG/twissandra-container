@@ -77,22 +77,6 @@ echo "Using Kubernetes cluster: $CLUSTER_LOC"
 # check to see if kubectl has be configured
 #
 echo " "
-echo "Locating kubectl and .kubeconfig..."
-SCRIPTPATH="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )"
-cd ${SCRIPTPATH}
-DEVBASE=${SCRIPTPATH%/twissandra-container}
-echo "DEVBASE ${DEVBASE}"
-#
-# locate projects...
-#
-KRAKENDIR=`find ${DEVBASE} -type d -name "kraken" -print | egrep '.*'`
-if [ $? -ne 0 ];then
-    echo "Could not find the Kraken project."
-    exit 1
-else
-    echo "found: $KRAKENDIR"
-fi
-
 KUBECTL=$(locate_kubectl)
 if [ $? -ne 0 ]; then
   exit 1

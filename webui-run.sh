@@ -2,11 +2,12 @@
 #
 # Script to start all the pieces of the twissandra demo
 # requires a cassandra cluster running as a kubernetes service
+# uses jq to parse json returns from kubectl
 #
 # 4/20/2015 mikeln
 #-------
 #
-VERSION="1.0"
+VERSION="2.0"
 function usage
 {
     echo "Runs cassandra client - Twissandra"
@@ -45,7 +46,8 @@ echo "  !!! NOTE  !!!"
 echo "  This script uses our kraken project assumptions:"
 echo "     kubectl will be located at (for OS-X):"
 echo "       /opt/kubernetes/platforms/darwin/amd64/kubectl"
-echo "    .kubeconfig is from our kraken project"
+echo " "
+echo "  jq must be installed "
 echo " "
 echo "  Your Kraken Kubernetes Cluster Must be"
 echo "  up and Running.  "
@@ -101,28 +103,17 @@ echo "Using Kubernetes cluster: $CLUSTER_LOC create schema: $CREATE_SCHEMA"
 #
 trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./webui-down.sh --cluster $CLUSTER_LOC; exit 9 " SIGHUP SIGINT SIGTERM
 #
+# check for required additional BASH app to parse json: 'jq'
+#
+which jq
+if [ $? -ne 0 ];then
+   echo "ERROR! jq is not accessible.  Please install it and make sure it is on your PATH"
+   exit 8
+fi
+#
 # check to see if kubectl has been configured
 #
 echo " "
-echo "Locating Kraken Project kubectl and .kubeconfig..."
-SCRIPTPATH="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )"
-cd ${SCRIPTPATH}
-DEVBASE=${SCRIPTPATH%/twissandra-container}
-echo "DEVBASE ${DEVBASE}"
-#
-# locate projects...
-#
-KRAKENDIR=`find ${DEVBASE} -type d -name "kraken" -print | egrep '.*'`
-if [ $? -ne 0 ];then
-    echo "Could not find the Kraken project."
-    exit 1
-else
-    echo "found: $KRAKENDIR"
-fi
-#
-# note this has changed.  it assumes that you correctly set your env after your cluster came up
-#
-
 KUBECTL=$(locate_kubectl)
 if [ $? -ne 0 ]; then
   exit 1
@@ -145,13 +136,19 @@ fi
 echo " "
 # get minion IPs for later...also checks if cluster is up
 echo "+++++ finding Kubernetes Nodes services ++++++++++++++++++++++++++++"
-NODEIPS=`$kubectl_local get nodes --output=template --template="{{range $.items}}{{.metadata.name}}${CRLF}{{end}}" 2>/dev/null`
+NODEIPS=""
+NODERET=$($kubectl_local get nodes --output=json  2>/dev/null)
 if [ $? -ne 0 ]; then
     echo "kubectl is not responding. Is your Kraken Kubernetes Cluster Up and Running? Did you set the correct values in your ~/.kube/config file for ${CLUSTER_LOC}?"
     exit 1;
 else
     #
     # TODO: should probably validate that the status is Ready for the minions.  low level concern 
+    #
+    # parset the json returned
+    NODEIPS=$( echo ${NODERET} | jq '.items[].metadata.name' | tr -d "\"" )
+    #
+    # TODO: may need to eval the return
     #
     echo "Kubernetes minions (nodes) IP(s):"
     for ip in $NODEIPS;do
@@ -269,7 +266,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     LASTSTATUS="unknown"
     while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ]; do
         let REMTIME=NUMTRIES*5
-        LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.status.phase}} 2>/dev/null`
+        LASTSTATUS_RET=$( $kubectl_local get pods dataschema --output=json 2>/dev/null )
         LASTRET=$?
         if [ $? -ne 0 ]; then
             echo -n "Twissandra dataschema pod not found $REMTIME"
@@ -283,6 +280,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
             let NUMTRIES=NUMTRIES-1
             sleep 5
         else
+            LASTSTATUS=$( echo ${LASTSTATUS_RET} | jq '.status.phase' | tr -d "\"" )
             #echo "Twissandra pod found $LASTSTATUS"
             if [ "$LASTSTATUS" = "Failed" ]; then
                 echo ""
@@ -363,7 +361,7 @@ LASTRET=1
 LASTSTATUS="unknown"
 while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Running" ]; do
     let REMTIME=NUMTRIES*5
-    LASTSTATUS=`$kubectl_local get pods twissandra --output=template --template={{.status.phase}} 2>/dev/null`
+    LASTSTATUS_RET=$( $kubectl_local get pods twissandra --output=json 2>/dev/null )
     LASTRET=$?
     if [ $? -ne 0 ]; then
         echo -n "Twissandra pod not found $REMTIME"
@@ -377,6 +375,7 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Running" ]; do
         let NUMTRIES=NUMTRIES-1
         sleep 5
     else
+        LASTSTATUS=$( echo ${LASTSTATUS_RET} | jq '.status.phase' | tr -d "\"" )
         #echo "Twissandra pod found $LASTSTATUS"
         if [ "$LASTSTATUS" != "Running" ]; then
             echo -n "Twissandra pod: $LASTSTATUS - NOT running $REMTIME secs remaining"
@@ -410,9 +409,10 @@ echo " "
 #
 # NO ERROR CHECKING HERE...this is ALL just Informational for the user
 #
-SERVICEIP=`$kubectl_local get services twissandra --output=template --template="{{.portalIP}}" 2>/dev/null`
-PUBLICPORT=`$kubectl_local get services twissandra --output=template --template="{{range $.spec.ports}}{{.nodePort}}${CRLF}{{end}}" 2>/dev/null`
-PUBLICIP=`$kubectl_local get services twissandra --output=template --template="{{.spec.publicIPs}}" 2>/dev/null`
+PUBLICPORT_RET=$($kubectl_local get services twissandra --output=json 2>/dev/null)
+PUBLICPORT=$( echo ${PUBLICPORT_RET} | jq '.spec.ports[].nodePort' | tr -d "\"" )
+PUBLICIP_RET=$( $kubectl_local get services twissandra --output=json 2>/dev/null )
+PUBLICIP=$( echo ${PUBLICIP_RET} | jq '.spec.publicIPs' | tr -d "\"" )
 # remove [] if present
 PUBLICIPS=`echo $PUBLICIP | tr -d '[]' | tr , '\n'`
 #

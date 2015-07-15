@@ -2,13 +2,14 @@
 #
 # Script to start all the pieces of the twissandra benchmark
 # requires a cassandra cluster running as a kubernetes service
+# uses jq to parse kubectl json returns
 #
 # run 4 pods
 #
 # 4/23/2015 mikeln
 #-------
 #
-VERSION="1.0"
+VERSION="2.0"
 function usage
 {
     echo "Runs cassandra client - Benchmark 04 Injectors"
@@ -47,7 +48,8 @@ echo "  !!! NOTE  !!!"
 echo "  This script uses our kraken project assumptions:"
 echo "     kubectl will be located at (for OS-X):"
 echo "       /opt/kubernetes/platforms/darwin/amd64/kubectl"
-echo "    .kubeconfig is from our kraken project"
+echo " "
+echo "  This script uses jq to parse json.  It must be installed."
 echo " "
 echo "  Your Kraken Kubernetes Cluster Must be"
 echo "  up and Running.  "
@@ -103,25 +105,17 @@ echo "Using Kubernetes cluster: $CLUSTER_LOC create schema: $CREATE_SCHEMA"
 # setup trap for script signals
 #
 trap "echo ' ';echo ' ';echo 'SIGNAL CAUGHT, SCRIPT TERMINATING, cleaning up'; . ./benchmark-04-down.sh --cluster $CLUSTER_LOC; exit 9 " SIGHUP SIGINT SIGTERM
+#
+# check for required additional BASH app to parse json: 'jq'
+#
+which jq
+if [ $? -ne 0 ];then
+   echo "ERROR! jq is not accessible.  Please install it and make sure it is on your PATH"
+   exit 8
+fi
 # check to see if kubectl has been configured
 #
 echo " "
-echo "Locating Kraken Project kubectl and .kubeconfig..."
-SCRIPTPATH="$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )"
-cd ${SCRIPTPATH}
-DEVBASE=${SCRIPTPATH%/twissandra-container}
-echo "DEVBASE ${DEVBASE}"
-#
-# locate projects...
-#
-KRAKENDIR=`find ${DEVBASE} -type d -name "kraken" -print | egrep '.*'`
-if [ $? -ne 0 ];then
-    echo "Could not find the Kraken project."
-    exit 1
-else
-    echo "found: $KRAKENDIR"
-fi
-
 KUBECTL=$(locate_kubectl)
 if [ $? -ne 0 ];then
     echo "Could not find kubectl."
@@ -142,13 +136,19 @@ fi
 echo " "
 # get minion IPs for later...also checks if cluster is up
 echo "+++++ finding Kubernetes Nodes services ++++++++++++++++++++++++++++"
-NODEIPS=`$kubectl_local get nodes --output=template --template="{{range $.items}}{{.metadata.name}}${CRLF}{{end}}" 2>/dev/null`
+NODEIPS=""
+NODERET=$($kubectl_local get nodes --output=json  2>/dev/null)
 if [ $? -ne 0 ]; then
     echo "kubectl is not responding. Is your Kraken Kubernetes Cluster Up and Running? Did you set the correct values in your ~/.kube/config file for ${CLUSTER_LOC}?"
     exit 1;
 else
     #
     # TODO: should probably validate that the status is Ready for the minions.  low level concern 
+    #
+    # parse the json returned
+    NODEIPS=$( echo ${NODERET} | jq '.items[].metadata.name' | tr -d "\"" )
+    #
+    # TODO: may need to eval the return
     #
     echo "Kubernetes minions (nodes) IP(s):"
     for ip in $NODEIPS;do
@@ -215,7 +215,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     LASTSTATUS="unknown"
     while [ $NUMTRIES -ne 0 ] && ( [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ] ); do
         let REMTIME=NUMTRIES*5
-        LASTSTATUS=`$kubectl_local get pods dataschema --output=template --template={{.status.phase}} 2>/dev/null`
+	LASTSTATUS_RET=$($kubectl_local get pods --selector=name=benchmark --output=json  2>/dev/null)
         LASTRET=$?
         if [ $? -ne 0 ]; then
             echo -n "Twissandra dataschema pod not found $REMTIME"
@@ -229,6 +229,13 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
             let NUMTRIES=NUMTRIES-1
             sleep 5
         else
+            # 
+            # parse json
+            #
+            LASTSTATUS=$( echo ${LASTSTATUS_RET} | jq '.items[].status.phase' | tr -d "\"" )
+            #
+            # TODO: eval for error...
+            #
             #echo "Twissandra pod found $LASTSTATUS"
             if [ "$LASTSTATUS" = "Failed" ]; then
                 echo ""
@@ -369,7 +376,7 @@ CURTIME=0
 ENDTIME=0
 while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ]; do
     let REMTIME=NUMTRIES*5
-    STATUSLIST=`$kubectl_local get pods --selector=name=benchmark --output=template --template="{{range $.items}}{{.status.phase}}${CRLF}{{end}}" 2>/dev/null`
+    STATUSLIST_RET=$( $kubectl_local get pods --selector=name=benchmark --output=json 2>/dev/null)
     #
     # set the last status:
     #       if 1 is Running then Running
@@ -384,6 +391,7 @@ while [ $NUMTRIES -ne 0 ] && [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS"
         let NUMTRIES=NUMTRIES-1
         sleep 5
     else
+        STATUSLIST=$( echo ${STATUSLIST_RET} | jq '.items[].status.phase' | tr -d "\"" )
         FINSTAT=0
         for STATE in $STATUSLIST;do
             if [ "$STATE" = "Running" ]; then

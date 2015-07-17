@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    labels:
+        name: twissandra
+    name: twissandra
+spec:
+    containers:
+      - name: twissandra
+        image: 172.16.16.15:5000/twissandra_kub:v11slim
+        args: [ 'twiss-prod','app' ]
+        limits:
+            cpu: 1
+        ports:
+          - name: web
+            containerPort: 8222
+          - name: cql
+            containerPort: 9042
+          - name: thrift
+            containerPort: 9160
+    restartPolicy: Never

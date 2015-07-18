@@ -213,9 +213,9 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
     NUMTRIES=120
     LASTRET=1
     LASTSTATUS="unknown"
-    while [ $NUMTRIES -ne 0 ] && ( [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ] ); do
+    while [ $NUMTRIES -ne 0 ] && ( [ "$LASTSTATUS" != "Succeeded" ] && [ "$LASTSTATUS" != "Failed" ] && [ "$LASTSTATUS" != "ExitCode:0" ] ); do
         let REMTIME=NUMTRIES*5
-	LASTSTATUS_RET=$($kubectl_local get pods --selector=name=benchmark --output=json  2>/dev/null)
+	    LASTSTATUS_RET=$($kubectl_local get pods --selector=name=dataschema --output=json  2>/dev/null)
         LASTRET=$?
         if [ $? -ne 0 ]; then
             echo -n "Twissandra dataschema pod not found $REMTIME"
@@ -240,7 +240,7 @@ if [ "$CREATE_SCHEMA" = "y" ]; then
             if [ "$LASTSTATUS" = "Failed" ]; then
                 echo ""
                 echo "Twissandra datachema pod: Failed!"
-            elif [ "$LASTSTATUS" = "Succeeded" ]; then
+            elif [ "$LASTSTATUS" = "Succeeded" ] || [ "$LASTSTATUS" = "ExitCode:0" ]; then
                 echo ""
                 echo "Twissandra datachema pod finished!"
             else

@@ -9,7 +9,7 @@ VERSION := b0slim
 #
 # do some repo evals... want everyone to use their own, unless building for the team
 #
-DEFAULT_REPO := "samsung-cnct"
+DEFAULT_REPO := "samsung_cnct"
 DOCKER_REPO ?= $(DEFAULT_REPO)
 REPO := $(DOCKER_REPO)
 #

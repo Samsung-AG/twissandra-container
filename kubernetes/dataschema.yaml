@@ -10,8 +10,6 @@ spec:
         image: quay.io/mikeln/twissandra_kub:v11slim
         imagePullPolicy: IfNotPresent
         args: [ 'twiss-prod','db' ]
-        limits:
-            cpu: 1
         ports:
           - name: cql
             containerPort: 9042

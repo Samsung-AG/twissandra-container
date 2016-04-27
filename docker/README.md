@@ -31,7 +31,7 @@ You must set your Docker Image Repository before running a build.  Run `make` to
 
     l2067532491-mn:docker$ make
     +++++++++++++++++++++++++++++++++++++++++++++++++++
-      You have not changed DOCKER_REPO from: samsungAG
+      You have not changed DOCKER_REPO from: samsung_cnct
       You MUST set DOCKER_REPO in your environment
       or directly in this Makefile unless you are
       building for the group

@@ -36,6 +36,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && ssh-add -l  \
 #RUN ssh -v -T -F /root/.ssh/config git@github.com 
     && git clone git@github.com:mikeln/twissandra.git /twissandra  \
+    && chdir /twissandra; git checkout original \
     && pip install -r /twissandra/requirements.txt \
 #
 # remove uneeded packages

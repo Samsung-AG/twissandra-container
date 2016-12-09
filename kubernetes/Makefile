@@ -5,7 +5,7 @@
 #
 # 2/20/2015 mln
 #
-VERSION := v11slim
+VERSION := v23slim
 #
 # do some repo evals... want everyone to use their own, unless building for the team
 #

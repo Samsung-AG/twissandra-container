@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: benchmark-03
+    namespace: cassandra
+spec:
+    containers:
+      - name: benchmark
+        image: quay.io/mikeln/twissandra_kub:v23slim
+        args: [ 'twiss-prod','bench' ]
+        ports:
+          - name: cql
+            containerPort: 9042
+          - name: thrift
+            containerPort: 9160
+    volumes:
+      - name: data
+        emptyDir: {}
+    restartPolicy: Never

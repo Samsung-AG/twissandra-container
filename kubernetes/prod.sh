@@ -9,6 +9,8 @@
 #
 . twiss-start
 
+export CQLENG_ALLOW_SCHEMA_MANAGEMENT=True
+
 if [ $# -lt 1 ]; then
    #python manage.py 
    #
